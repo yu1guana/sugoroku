@@ -1,0 +1,11 @@
+[[player]]
+name = "Alice"
+
+[[player]]
+name = "Bob"
+
+# [[player]]
+# name = "Charlie"
+#
+# [[player]]
+# name = "Dave"
