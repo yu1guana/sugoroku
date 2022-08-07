@@ -105,6 +105,8 @@ impl AreaEffect for NoEffect {
 }
 
 /// 次回以降プレイヤーをスキップする
+///
+/// ステージ作成時にはsetteingsに休む回数を記入する。
 pub struct SkipSelf {
     num_skip: u8,
 }
@@ -134,6 +136,8 @@ impl AreaEffect for SkipSelf {
 }
 
 /// プレイヤーを進める
+///
+/// ステージ作成時にはsetteingsに進む数を記入する。
 pub struct AdvanceSelf {
     num_advance: usize,
 }
@@ -163,6 +167,8 @@ impl AreaEffect for AdvanceSelf {
 }
 
 /// プレイヤーを戻す
+///
+/// ステージ作成時にはsetteingsに戻す数を記入する。
 pub struct DisadvanceSelf {
     num_disadvance: usize,
 }
