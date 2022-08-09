@@ -74,7 +74,7 @@ impl TextSet {
             Language::Japanese => {
                 self.guidance.push_str("ESC: 終了\n");
                 self.guidance.push_str("Ctrl-l: 再描画\n");
-                self.guidance.push_str("Ctrl-l: タイトル画面の表示");
+                self.guidance.push_str("Ctrl-t: タイトル画面の表示");
             }
         }
     }
