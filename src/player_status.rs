@@ -5,6 +5,7 @@ use anyhow::Result;
 use std::collections::HashMap;
 
 /// プレイヤーの状態
+#[derive(Debug)]
 pub struct PlayerStatus {
     position: usize,
     num_skip: u8,

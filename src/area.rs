@@ -3,10 +3,11 @@
 use crate::error::GeneralError;
 use crate::player_status::PlayerStatus;
 use crate::preferences::{Language, Preferences};
-use anyhow::{Context, Result};
+use anyhow::Context;
 use std::collections::HashMap;
 
 /// 各マスを表す
+#[derive(Debug)]
 pub struct Area {
     description: String,
     effect_list: Vec<Box<dyn AreaEffect>>,
@@ -24,7 +25,7 @@ impl Area {
         current_player: &str,
         player_order: &[String],
         player_status_table: &mut HashMap<String, PlayerStatus>,
-    ) -> Result<()> {
+    ) -> Result<(), GeneralError> {
         for effect in self.effect_list.iter() {
             effect.execute(current_player, player_order, player_status_table)?;
         }
@@ -42,18 +43,21 @@ impl Area {
 }
 
 /// マスの持つ効果
-pub trait AreaEffect {
+pub trait AreaEffect: core::fmt::Debug {
     fn effect_text(&self, preferences: &Preferences) -> String;
     fn execute(
         &self,
         current_player: &str,
         player_order: &[String],
         player_status_table: &mut HashMap<String, PlayerStatus>,
-    ) -> Result<()>;
+    ) -> Result<(), GeneralError>;
 }
 
 /// 文字列からAreaEffectを作成
-pub fn try_make_area_effect(area_type: &str, settings: &str) -> Result<Box<dyn AreaEffect>> {
+pub fn try_make_area_effect(
+    area_type: &str,
+    settings: &str,
+) -> Result<Box<dyn AreaEffect>, anyhow::Error> {
     match area_type {
         "NoEffect" => Ok(Box::new(NoEffect::new())),
         "SkipSelf" => {
@@ -82,6 +86,7 @@ pub fn try_make_area_effect(area_type: &str, settings: &str) -> Result<Box<dyn A
 }
 
 /// 何も起こらない
+#[derive(Debug)]
 pub struct NoEffect {}
 impl NoEffect {
     fn new() -> Self {
@@ -99,7 +104,7 @@ impl AreaEffect for NoEffect {
         _current_player: &str,
         _player_order: &[String],
         _player_status_list: &mut HashMap<String, PlayerStatus>,
-    ) -> Result<()> {
+    ) -> Result<(), GeneralError> {
         Ok(())
     }
 }
@@ -107,6 +112,7 @@ impl AreaEffect for NoEffect {
 /// 次回以降プレイヤーをスキップする
 ///
 /// ステージ作成時にはsetteingsに休む回数を記入する。
+#[derive(Debug)]
 pub struct SkipSelf {
     num_skip: u8,
 }
@@ -126,7 +132,7 @@ impl AreaEffect for SkipSelf {
         current_player: &str,
         _player_order: &[String],
         player_status_table: &mut HashMap<String, PlayerStatus>,
-    ) -> Result<()> {
+    ) -> Result<(), GeneralError> {
         player_status_table
             .get_mut(current_player)
             .ok_or_else(|| GeneralError::NotFoundPlayer(current_player.to_owned()))?
@@ -138,6 +144,7 @@ impl AreaEffect for SkipSelf {
 /// プレイヤーを進める
 ///
 /// ステージ作成時にはsetteingsに進む数を記入する。
+#[derive(Clone, Debug)]
 pub struct AdvanceSelf {
     num_advance: usize,
 }
@@ -157,7 +164,7 @@ impl AreaEffect for AdvanceSelf {
         current_player: &str,
         _player_order: &[String],
         player_status_table: &mut HashMap<String, PlayerStatus>,
-    ) -> Result<()> {
+    ) -> Result<(), GeneralError> {
         player_status_table
             .get_mut(current_player)
             .ok_or_else(|| GeneralError::NotFoundPlayer(current_player.to_owned()))?
@@ -169,6 +176,7 @@ impl AreaEffect for AdvanceSelf {
 /// プレイヤーを戻す
 ///
 /// ステージ作成時にはsetteingsに戻す数を記入する。
+#[derive(Clone, Debug)]
 pub struct DisadvanceSelf {
     num_disadvance: usize,
 }
@@ -188,7 +196,7 @@ impl AreaEffect for DisadvanceSelf {
         current_player: &str,
         _player_order: &[String],
         player_status_table: &mut HashMap<String, PlayerStatus>,
-    ) -> Result<()> {
+    ) -> Result<(), GeneralError> {
         player_status_table
             .get_mut(current_player)
             .ok_or_else(|| GeneralError::NotFoundPlayer(current_player.to_owned()))?

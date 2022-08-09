@@ -4,9 +4,9 @@ use crate::area::Area;
 use crate::error::GeneralError;
 use crate::player_status::PlayerStatus;
 use crate::preferences::Preferences;
-use anyhow::Result;
 use std::collections::HashMap;
 
+#[derive(Debug)]
 pub struct World {
     title: String,
     opening_msg: String,
@@ -44,7 +44,7 @@ impl World {
         current_player: &str,
         player_order: &[String],
         player_status_table: &mut HashMap<String, PlayerStatus>,
-    ) -> Result<String> {
+    ) -> Result<String, GeneralError> {
         if dice > self.dice_max {
             return Err(GeneralError::OutOfRangeDice(dice).into());
         }

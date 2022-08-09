@@ -22,13 +22,14 @@ impl Default for Language {
     }
 }
 
-struct TuiPreferences {
-    player_list_window_width: u16,
-    player_list_window_height: u16,
-    guidance_window_width: u16,
-    guidance_window_height: u16,
-    body_window_width: u16,
-    body_window_height: u16,
-    input_window_width: u16,
-    input_window_height: u16,
-}
+// #[derive(Clone, Copy, Debug, Default)]
+// struct TuiPreferences {
+//     player_list_window_width: u16,
+//     player_list_window_height: u16,
+//     guidance_window_width: u16,
+//     guidance_window_height: u16,
+//     body_window_width: u16,
+//     body_window_height: u16,
+//     input_window_width: u16,
+//     input_window_height: u16,
+// }

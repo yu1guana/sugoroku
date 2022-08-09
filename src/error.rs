@@ -8,8 +8,10 @@ pub enum GeneralError {
     NotFoundAreaType(String),
     #[error("duplicate player: {0}")]
     DuplicatePlayer(String),
-    #[error("Dice is out of range: {0}")]
+    #[error("{0}")]
     OutOfRangeDice(usize),
     #[error("Position is out of range: {0} {1}")]
     OutOfRangePosition(String, usize),
+    #[error("There is no player")]
+    NoPlayer,
 }

@@ -2,7 +2,7 @@
 
 use crate::error::GeneralError;
 use crate::player_status::{PlayerOrder, PlayerStatus};
-use crate::preferences::Preferences;
+use crate::preferences::{Language, Preferences};
 use crate::world::World;
 use anyhow::Result;
 use std::collections::HashMap;
@@ -16,264 +16,368 @@ use tui::layout::{Alignment, Constraint, Direction, Layout};
 use tui::terminal::{Frame, Terminal};
 use tui::widgets::{Block, Borders, Paragraph};
 
+#[derive(Debug)]
+struct GameData {
+    world: World,
+    current_player: String,
+    player_order: Vec<String>,
+    player_status_table: HashMap<String, PlayerStatus>,
+    ui_status: UiStatus,
+    ui_status_buffer: UiStatus,
+    text_set: TextSet,
+}
+
+#[derive(Clone, Debug)]
+enum UiStatus {
+    QuitMenu,
+    TitleMenu,
+    DiceRoll,
+    DiceResult,
+    GameFinished,
+}
+
+#[derive(Clone, Debug, Default)]
+struct TextSet {
+    main_window: String,
+    message: String,
+    dice_string: String,
+    guidance: String,
+    player_list: String,
+}
+
+impl GameData {
+    fn try_new(
+        world: World,
+        player_order: Vec<String>,
+        player_status_table: HashMap<String, PlayerStatus>,
+    ) -> Result<Self> {
+        let current_player = player_order
+            .first()
+            .ok_or_else(|| GeneralError::NoPlayer)?
+            .to_owned();
+        Ok(Self {
+            world,
+            current_player,
+            player_order,
+            player_status_table,
+            ui_status: UiStatus::TitleMenu,
+            ui_status_buffer: UiStatus::TitleMenu,
+            text_set: Default::default(),
+        })
+    }
+}
+
+impl TextSet {
+    fn set_guidance(&mut self, preferences: &Preferences) {
+        self.guidance.clear();
+        match preferences.language() {
+            Language::Japanese => {
+                self.guidance.push_str("ESC: 終了\n");
+                self.guidance.push_str("Ctrl-l: 再描画\n");
+                self.guidance.push_str("Ctrl-l: タイトル画面の表示");
+            }
+        }
+    }
+    fn set_player_list(
+        &mut self,
+        preferences: &Preferences,
+        current_player: &str,
+        player_order: &[String],
+        player_status_table: &HashMap<String, PlayerStatus>,
+    ) -> Result<()> {
+        const GOAL_MARK: &'static str = "🏁 ";
+        const DICE_MARK: &'static str = "🎲 ";
+        self.player_list.clear();
+        self.player_list.push_str(GOAL_MARK);
+        self.player_list.push_str("   ");
+        self.player_list.push_str("Name");
+        self.player_list.push_str(match preferences.language() {
+            Language::Japanese => "名前",
+        });
+        self.player_list.push_str("\n");
+        for player in player_order {
+            let order_of_arrival = player_status_table
+                .get(player)
+                .ok_or_else(|| GeneralError::NotFoundPlayer(player.to_owned()))?
+                .order_of_arrival();
+            match order_of_arrival {
+                Some(x) => self.player_list.push_str(&format!("{0:>2} ", x)),
+                None => self.player_list.push_str(&format!("{0:>2} ", "")),
+            }
+            if player == current_player {
+                self.player_list.push_str(DICE_MARK);
+            } else {
+                self.player_list.push_str("   ");
+            }
+            self.player_list.push_str(player);
+            self.player_list.push_str("\n");
+        }
+        Ok(())
+    }
+    fn set_prompt_dice_roll(&mut self, preferences: &Preferences) {
+        self.message.clear();
+        match preferences.language() {
+            Language::Japanese => {
+                self.message.push_str("サイコロを振ってください。 >>> ");
+            }
+        }
+        self.message.push_str(self.dice_string.as_str());
+    }
+    fn set_prompt_enter(&mut self, preferences: &Preferences) {
+        self.message.clear();
+        match preferences.language() {
+            Language::Japanese => self.message.push_str("エンターキーを押してください。"),
+        }
+    }
+    fn set_prompt_game_finish(&mut self, preferences: &Preferences) {
+        self.message.clear();
+        self.main_window.clear();
+        match preferences.language() {
+            Language::Japanese => self
+                .message
+                .push_str("全員ゴールしました。\nゲームを終了してください。"),
+        }
+    }
+    fn set_dice_is_out_of_range(&mut self, preferences: &Preferences, dice: usize) {
+        match preferences.language() {
+            Language::Japanese => {
+                self.main_window = format!("サイコロの値が範囲外です: {}", dice);
+            }
+        }
+    }
+}
+
 pub fn run(
     preferences: Preferences,
     world: World,
     player_order: Vec<String>,
     player_status_table: HashMap<String, PlayerStatus>,
 ) -> Result<()> {
-    let stdout = termion::screen::AlternateScreen::from(io::stdout().into_raw_mode().unwrap());
+    let stdout = termion::screen::AlternateScreen::from(io::stdout().into_raw_mode()?);
     let backend = TermionBackend::new(stdout);
-    let mut terminal = Terminal::new(backend).unwrap();
-    let mut world = world;
-    let mut player_status_table = player_status_table;
-    terminal.hide_cursor()?;
-    display_title(&mut terminal, &preferences, &world)?;
-    play(
-        &mut terminal,
+    let mut terminal = Terminal::new(backend)?;
+    let mut game_data = GameData::try_new(world, player_order, player_status_table)?;
+    game_data.text_set.set_guidance(&preferences);
+    game_data.text_set.set_prompt_dice_roll(&preferences);
+    game_data.text_set.set_player_list(
         &preferences,
-        &mut world,
-        &player_order,
-        &mut player_status_table,
+        &game_data.current_player,
+        &game_data.player_order,
+        &game_data.player_status_table,
     )?;
-    Ok(())
-}
-
-fn display_title<B: Backend>(
-    terminal: &mut Terminal<B>,
-    preferences: &Preferences,
-    world: &World,
-) -> Result<()> {
-    terminal.draw(|frame| ui_title(frame, preferences, world).unwrap())?;
-    for key in io::stdin().keys() {
-        match key {
-            Ok(Key::Char('\n')) => break,
-            _ => {}
-        }
-    }
-    Ok(())
-}
-
-fn ui_title<B: Backend>(
-    frame: &mut Frame<B>,
-    _preferences: &Preferences,
-    world: &World,
-) -> Result<()> {
-    let chunks = Layout::default()
-        .margin(1)
-        .constraints([
-            Constraint::Percentage(40),
-            Constraint::Length(3),
-            Constraint::Percentage(50),
-        ])
-        .split(frame.size());
-    let title = Paragraph::new(world.title())
-        .alignment(Alignment::Center)
-        .block(Block::default());
-    frame.render_widget(title, chunks[1]);
-    let opening_msg =
-        world.opening_msg().to_owned() + "\n" + "開始するにはエンターキーを押してください。";
-    let opening_msg = Paragraph::new(opening_msg)
-        .alignment(Alignment::Center)
-        .block(Block::default());
-    frame.render_widget(opening_msg, chunks[2]);
-    Ok(())
-}
-
-fn play<B: Backend>(
-    terminal: &mut Terminal<B>,
-    preferences: &Preferences,
-    world: &mut World,
-    player_order: &[String],
-    player_status_table: &mut HashMap<String, PlayerStatus>,
-) -> Result<()> {
-    let mut current_player = player_order.first().unwrap().to_owned();
-    const DICE_ROLL_MSG: &str = "サイコロを振ってください。 >>> ";
-    let mut message_window_text = DICE_ROLL_MSG.to_string();
-    let mut dice_string = String::new();
-    let mut body_text = world.start_description(preferences);
-    terminal.draw(|frame| {
-        ui_playing(
-            frame,
-            &message_window_text,
-            &body_text,
-            world,
-            &current_player,
-            player_order,
-            player_status_table,
-        )
-        .unwrap()
-    })?;
-    for key in io::stdin().keys() {
-        match key {
-            Ok(Key::Esc) => {
-                if quit_menu(terminal)? {
-                    return Ok(());
-                } else {
-                    terminal.draw(|frame| {
-                        ui_playing(
-                            frame,
-                            &message_window_text,
-                            &body_text,
-                            world,
-                            &current_player,
-                            player_order,
-                            player_status_table,
-                        )
-                        .unwrap()
-                    })?;
-                };
+    game_data.text_set.main_window = game_data.world.start_description(&preferences);
+    terminal.hide_cursor()?;
+    terminal.draw(|frame| ui(frame, &preferences, &game_data))?;
+    while let Some(Ok(key)) = io::stdin().keys().next() {
+        match &game_data.ui_status {
+            UiStatus::TitleMenu => {
+                title_menu(&preferences, &mut terminal, &mut game_data, key)?;
             }
-            Ok(Key::Ctrl('l')) => {
-                terminal.clear()?;
-                terminal.draw(|frame| {
-                    ui_playing(
-                        frame,
-                        &message_window_text,
-                        &body_text,
-                        world,
-                        &current_player,
-                        player_order,
-                        player_status_table,
-                    )
-                    .unwrap()
-                })?;
+            UiStatus::DiceRoll => {
+                dice_roll(&preferences, &mut terminal, &mut game_data, key)?;
             }
-            Ok(Key::Char(c)) => {
-                if c.is_ascii_digit() {
-                    dice_string.push(c);
-                } else if c == '\n' && !dice_string.is_empty() {
-                    let dice = dice_string.parse().unwrap();
-                    dice_string.clear();
-                    body_text = match world.dice_roll(
-                        &preferences,
-                        dice,
-                        &current_player,
-                        player_order,
-                        player_status_table,
-                    ) {
-                        Ok(body_text) => {
-                            match player_order.next_player(&current_player, player_status_table)? {
-                                Some(player) => current_player = player.to_owned(),
-                                None => {
-                                    break;
-                                }
-                            };
-                            body_text
-                        }
-                        Err(e) => format!("{:?}", e),
-                    };
+            UiStatus::DiceResult => {
+                dice_result(&preferences, &mut terminal, &mut game_data, key)?;
+            }
+            UiStatus::QuitMenu => {
+                if quit_menu(&preferences, &mut terminal, &mut game_data, key)? {
+                    break;
                 }
-                message_window_text = DICE_ROLL_MSG.to_owned() + &dice_string;
-                terminal.draw(|frame| {
-                    ui_playing(
-                        frame,
-                        &message_window_text.clone(),
-                        &body_text,
-                        world,
-                        &current_player,
-                        player_order,
-                        player_status_table,
-                    )
-                    .unwrap()
-                })?;
             }
-            Ok(Key::Backspace) => {
-                dice_string.pop();
-                message_window_text = DICE_ROLL_MSG.to_owned() + &dice_string;
-                terminal.draw(|frame| {
-                    ui_playing(
-                        frame,
-                        &message_window_text,
-                        &body_text,
-                        world,
-                        &current_player,
-                        player_order,
-                        player_status_table,
-                    )
-                    .unwrap()
-                })?;
-            }
-            _ => {
-                terminal.draw(|frame| {
-                    ui_playing(
-                        frame,
-                        &message_window_text,
-                        &body_text,
-                        world,
-                        &current_player,
-                        player_order,
-                        player_status_table,
-                    )
-                    .unwrap()
-                })?;
-            }
-        }
-    }
-    message_window_text = "全員ゴールしました。ゲームを終了してください。".to_owned();
-    for key in io::stdin().keys() {
-        match key {
-            Ok(Key::Esc) => {
-                if quit_menu(terminal)? {
-                    return Ok(());
-                } else {
-                    terminal.draw(|frame| {
-                        ui_playing(
-                            frame,
-                            &message_window_text,
-                            &body_text,
-                            world,
-                            &current_player,
-                            player_order,
-                            player_status_table,
-                        )
-                        .unwrap()
-                    })?;
-                };
-            }
-            Ok(Key::Ctrl('l')) => {
-                terminal.clear()?;
-                terminal.draw(|frame| {
-                    ui_playing(
-                        frame,
-                        &message_window_text,
-                        &body_text,
-                        world,
-                        &current_player,
-                        player_order,
-                        player_status_table,
-                    )
-                    .unwrap()
-                })?;
-            }
-            _ => {
-                terminal.draw(|frame| {
-                    ui_playing(
-                        frame,
-                        &message_window_text,
-                        &body_text,
-                        world,
-                        &current_player,
-                        player_order,
-                        player_status_table,
-                    )
-                    .unwrap()
-                })?;
+            UiStatus::GameFinished => {
+                game_finished(&preferences, &mut terminal, &mut game_data, key)?
             }
         }
     }
     Ok(())
 }
 
-fn quit_menu<B: Backend>(terminal: &mut Terminal<B>) -> Result<bool> {
-    terminal.draw(|frame| ui_quit(frame))?;
-    match io::stdin().keys().next().unwrap() {
-        Ok(Key::Char('Y')) => return Ok(true),
-        _ => return Ok(false),
+fn title_menu<B: Backend>(
+    preferences: &Preferences,
+    terminal: &mut Terminal<B>,
+    game_data: &mut GameData,
+    key: Key,
+) -> Result<()> {
+    match key {
+        Key::Char('\n') => {
+            game_data.ui_status = UiStatus::DiceRoll;
+            game_data.ui_status_buffer = UiStatus::DiceRoll;
+        }
+        Key::Esc => {
+            game_data.ui_status = UiStatus::QuitMenu;
+        }
+        Key::Ctrl('l') => terminal.clear()?,
+        _ => return Ok(()),
+    }
+    terminal.draw(|frame| ui(frame, preferences, &game_data))?;
+    Ok(())
+}
+
+fn dice_roll<B: Backend>(
+    preferences: &Preferences,
+    terminal: &mut Terminal<B>,
+    game_data: &mut GameData,
+    key: Key,
+) -> Result<()> {
+    match key {
+        Key::Char(c) => {
+            match c {
+                '0'..='9' => {
+                    game_data.text_set.dice_string.push(c);
+                    game_data.text_set.set_prompt_dice_roll(preferences);
+                }
+                '\n' => {
+                    if game_data.text_set.dice_string.is_empty() {
+                        return Ok(());
+                    }
+                    game_data.text_set.set_prompt_enter(preferences);
+                    match game_data.world.dice_roll(
+                        preferences,
+                        game_data.text_set.dice_string.parse()?,
+                        &game_data.current_player,
+                        &game_data.player_order,
+                        &mut game_data.player_status_table,
+                    ) {
+                        Ok(main_window_text) => {
+                            game_data.text_set.main_window = main_window_text;
+                            match game_data.player_order.next_player(
+                                &game_data.current_player,
+                                &mut game_data.player_status_table,
+                            )? {
+                                Some(player) => {
+                                    game_data.ui_status = UiStatus::DiceResult;
+                                    game_data.ui_status_buffer = UiStatus::DiceResult;
+                                    game_data.current_player = player.to_owned();
+                                }
+                                None => {
+                                    game_data.ui_status = UiStatus::GameFinished;
+                                    game_data.ui_status_buffer = UiStatus::GameFinished;
+                                }
+                            }
+                        }
+                        Err(GeneralError::OutOfRangeDice(dice)) => {
+                            game_data.ui_status = UiStatus::DiceResult;
+                            game_data.ui_status_buffer = UiStatus::DiceResult;
+                            game_data
+                                .text_set
+                                .set_dice_is_out_of_range(preferences, dice);
+                        }
+                        Err(e) => return Err(e.into()),
+                    }
+                }
+                _ => {}
+            };
+        }
+        Key::Backspace => {
+            game_data.text_set.dice_string.pop();
+            game_data.text_set.set_prompt_dice_roll(preferences);
+        }
+        Key::Esc => {
+            game_data.ui_status_buffer = game_data.ui_status.clone();
+            game_data.ui_status = UiStatus::QuitMenu;
+        }
+        Key::Ctrl('t') => {
+            game_data.ui_status_buffer = game_data.ui_status.clone();
+            game_data.ui_status = UiStatus::TitleMenu;
+        }
+        Key::Ctrl('l') => terminal.clear()?,
+        _ => return Ok(()),
+    }
+    terminal.draw(|frame| ui(frame, preferences, &game_data))?;
+    Ok(())
+}
+
+fn dice_result<B: Backend>(
+    preferences: &Preferences,
+    terminal: &mut Terminal<B>,
+    game_data: &mut GameData,
+    key: Key,
+) -> Result<()> {
+    match key {
+        Key::Char('\n') => {
+            game_data.ui_status = UiStatus::DiceRoll;
+            game_data.ui_status_buffer = UiStatus::DiceRoll;
+            game_data.text_set.dice_string.clear();
+            game_data.text_set.main_window.clear();
+            game_data.text_set.set_prompt_dice_roll(preferences);
+            game_data.text_set.set_player_list(
+                preferences,
+                &game_data.current_player,
+                &game_data.player_order,
+                &game_data.player_status_table,
+            )?;
+        }
+        Key::Esc => {
+            game_data.ui_status_buffer = game_data.ui_status.clone();
+            game_data.ui_status = UiStatus::QuitMenu;
+        }
+        Key::Ctrl('t') => {
+            game_data.ui_status_buffer = game_data.ui_status.clone();
+            game_data.ui_status = UiStatus::TitleMenu;
+        }
+        Key::Ctrl('l') => terminal.clear()?,
+        _ => return Ok(()),
+    }
+    terminal.draw(|frame| ui(frame, preferences, &game_data))?;
+    Ok(())
+}
+
+fn game_finished<B: Backend>(
+    preferences: &Preferences,
+    terminal: &mut Terminal<B>,
+    game_data: &mut GameData,
+    key: Key,
+) -> Result<()> {
+    match key {
+        Key::Char('\n') => {
+            game_data.text_set.set_prompt_game_finish(preferences);
+        }
+        Key::Esc => {
+            game_data.ui_status_buffer = game_data.ui_status.clone();
+            game_data.ui_status = UiStatus::QuitMenu;
+        }
+        Key::Ctrl('t') => {
+            game_data.ui_status_buffer = game_data.ui_status.clone();
+            game_data.ui_status = UiStatus::TitleMenu;
+        }
+        Key::Ctrl('l') => terminal.clear()?,
+        _ => return Ok(()),
+    }
+    terminal.draw(|frame| ui(frame, preferences, &game_data))?;
+    Ok(())
+}
+
+fn quit_menu<B: Backend>(
+    preferences: &Preferences,
+    terminal: &mut Terminal<B>,
+    game_data: &mut GameData,
+    key: Key,
+) -> Result<bool> {
+    match key {
+        Key::Char('Y') => return Ok(true),
+        Key::Ctrl('l') => {
+            terminal.clear()?;
+            Ok(false)
+        }
+        _ => {
+            game_data.ui_status = game_data.ui_status_buffer.clone();
+            terminal.draw(|frame| ui(frame, preferences, &game_data))?;
+            Ok(false)
+        }
     }
 }
 
-fn ui_quit<B: Backend>(frame: &mut Frame<B>) {
+fn ui<B: Backend>(frame: &mut Frame<B>, preferences: &Preferences, game_data: &GameData) {
+    match game_data.ui_status {
+        UiStatus::TitleMenu => ui_title(frame, preferences, &game_data),
+        UiStatus::QuitMenu => {
+            ui_quit(frame, preferences);
+        }
+        _ => ui_playing(frame, preferences, game_data),
+    }
+}
+
+fn ui_title<B: Backend>(frame: &mut Frame<B>, preferences: &Preferences, game_data: &GameData) {
     let chunks = Layout::default()
         .margin(1)
         .constraints([
@@ -282,36 +386,50 @@ fn ui_quit<B: Backend>(frame: &mut Frame<B>) {
             Constraint::Percentage(50),
         ])
         .split(frame.size());
-    let title = Paragraph::new("ゲームを終了しますか？")
+    let title = Paragraph::new(game_data.world.title())
         .alignment(Alignment::Center)
         .block(Block::default());
     frame.render_widget(title, chunks[1]);
-    let opening_msg = Paragraph::new("Y / [n]")
+    let mut opening_msg_text = String::new();
+    opening_msg_text.push('\n');
+    opening_msg_text.push_str(game_data.world.opening_msg());
+    opening_msg_text.push('\n');
+    opening_msg_text.push('\n');
+    match game_data.ui_status_buffer {
+        UiStatus::TitleMenu => {
+            opening_msg_text.push_str(match preferences.language() {
+                Language::Japanese => "開始するにはエンターキーを押してください。",
+            });
+        }
+        _ => {
+            opening_msg_text.push_str(match preferences.language() {
+                Language::Japanese => "ゲームに戻るにはエンターキーを押してください。",
+            });
+        }
+    }
+    let opening_msg = Paragraph::new(opening_msg_text)
         .alignment(Alignment::Center)
         .block(Block::default());
     frame.render_widget(opening_msg, chunks[2]);
 }
 
-fn ui_playing<B: Backend>(
-    frame: &mut Frame<B>,
-    message_window_text: &str,
-    body_window_text: &str,
-    world: &World,
-    current_player: &str,
-    player_order: &[String],
-    player_status_table: &HashMap<String, PlayerStatus>,
-) -> Result<()> {
+fn ui_playing<B: Backend>(frame: &mut Frame<B>, _preferences: &Preferences, game_data: &GameData) {
     let chunks = Layout::default()
         .direction(Direction::Vertical)
         .constraints([Constraint::Percentage(10), Constraint::Percentage(90)].as_ref())
         .split(frame.size());
-    frame.render_widget(guidance_window()?, chunks[0]);
+    frame.render_widget(
+        Paragraph::new(game_data.text_set.guidance.as_str())
+            .block(Block::default().title("Guidance").borders(Borders::ALL)),
+        chunks[0],
+    );
     let bottom_chunks = Layout::default()
         .direction(Direction::Horizontal)
         .constraints([Constraint::Percentage(10), Constraint::Percentage(90)].as_ref())
         .split(chunks[1]);
     frame.render_widget(
-        player_list_window(world, current_player, player_order, player_status_table)?,
+        Paragraph::new(game_data.text_set.player_list.as_str())
+            .block(Block::default().title("Player list").borders(Borders::ALL)),
         bottom_chunks[0],
     );
     let right_chunks = Layout::default()
@@ -319,48 +437,35 @@ fn ui_playing<B: Backend>(
         .horizontal_margin(1)
         .constraints([Constraint::Percentage(10), Constraint::Percentage(90)].as_ref())
         .split(bottom_chunks[1]);
-    let message_window = Paragraph::new(message_window_text)
-        .block(Block::default().title("Input").borders(Borders::ALL));
-    frame.render_widget(message_window, right_chunks[0]);
-    let body_window =
-        Paragraph::new(body_window_text).block(Block::default().borders(Borders::ALL));
-    frame.render_widget(body_window, right_chunks[1]);
-    Ok(())
+    frame.render_widget(
+        Paragraph::new(game_data.text_set.message.as_str())
+            .block(Block::default().title("Message").borders(Borders::ALL)),
+        right_chunks[0],
+    );
+    frame.render_widget(
+        Paragraph::new(game_data.text_set.main_window.as_str())
+            .block(Block::default().borders(Borders::ALL)),
+        right_chunks[1],
+    );
 }
 
-fn player_list_window<'a>(
-    _world: &World,
-    current_player: &str,
-    player_order: &[String],
-    player_status_table: &HashMap<String, PlayerStatus>,
-) -> Result<Paragraph<'a>> {
-    let block = Block::default().title("Player list").borders(Borders::ALL);
-    let goal_mark = "🏁 ";
-    let dice_mark = "🎲 ";
-    let mut text = goal_mark.to_owned() + "   Name\n";
-    for player in player_order {
-        let order_of_arrival = player_status_table
-            .get(player)
-            .ok_or_else(|| GeneralError::NotFoundPlayer(player.to_owned()))?
-            .order_of_arrival();
-        match order_of_arrival {
-            Some(x) => text += &format!("{0:>2} ", x),
-            None => text += &format!("{0:>2} ", ""),
-        }
-        if player == current_player {
-            text += dice_mark;
-        } else {
-            text += "   "
-        }
-        text += player;
-        text += "\n";
-    }
-    Ok(Paragraph::new(text).block(block))
-}
-
-fn guidance_window<'a>() -> Result<Paragraph<'a>> {
-    let block = Block::default().title("Guidance").borders(Borders::ALL);
-    let mut text = "ESC: Quit\n".to_owned();
-    text += "Ctrl-l: Rewrite window";
-    Ok(Paragraph::new(text).block(block))
+fn ui_quit<B: Backend>(frame: &mut Frame<B>, preferences: &Preferences) {
+    let chunks = Layout::default()
+        .margin(1)
+        .constraints([
+            Constraint::Percentage(40),
+            Constraint::Length(3),
+            Constraint::Percentage(50),
+        ])
+        .split(frame.size());
+    let title = Paragraph::new(match preferences.language() {
+        Language::Japanese => "ゲームを終了しますか？",
+    })
+    .alignment(Alignment::Center)
+    .block(Block::default());
+    frame.render_widget(title, chunks[1]);
+    let opening_msg = Paragraph::new("Y / [n]")
+        .alignment(Alignment::Center)
+        .block(Block::default());
+    frame.render_widget(opening_msg, chunks[2]);
 }
