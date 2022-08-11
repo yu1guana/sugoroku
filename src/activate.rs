@@ -1,6 +1,5 @@
 // Copyright (c) 2022 Yuichi Ishida
 
-use crate::game_system::toml_interface::{read_player_list_from_file, read_world_from_file};
 use anyhow::Result;
 use clap::{Parser, Subcommand, ValueHint};
 use std::path::PathBuf;
@@ -9,22 +8,15 @@ impl Cli {
     pub fn run() -> Result<()> {
         match Cli::parse().action {
             Action::Game {
-                world_file,
                 player_list_file,
+                world_file,
             } => {
-                let (player_order, player_status_table) =
-                    read_player_list_from_file(&player_list_file)?;
-                let world = read_world_from_file(&world_file)?;
-                crate::user_interface::tui::run(
-                    Default::default(),
-                    world,
-                    player_order,
-                    player_status_table,
-                )?;
+                crate::user_interface::tui::run(Default::default(), player_list_file, world_file)?;
                 Ok(())
             }
             Action::WorldToTex { world_file } => {
-                unimplemented!();
+                crate::world_to_tex::run(world_file)?;
+                Ok(())
             }
         }
     }
@@ -46,9 +38,9 @@ pub struct Cli {
 enum Action {
     Game {
         #[clap(value_hint(ValueHint::FilePath))]
-        world_file: PathBuf,
-        #[clap(value_hint(ValueHint::FilePath))]
         player_list_file: PathBuf,
+        #[clap(value_hint(ValueHint::FilePath))]
+        world_file: PathBuf,
     },
     WorldToTex {
         #[clap(value_hint(ValueHint::FilePath))]

@@ -2,11 +2,13 @@
 
 use crate::error::GameSystemError;
 use crate::game_system::player_status::{PlayerOrder, PlayerStatus};
+use crate::game_system::toml_interface::{read_player_list_from_file, read_world_from_file};
 use crate::game_system::world::World;
 use crate::preferences::{Language, Preferences};
 use anyhow::Result;
 use std::collections::HashMap;
 use std::io;
+use std::path::PathBuf;
 use termion;
 use termion::event::Key;
 use termion::input::TermRead;
@@ -149,10 +151,11 @@ impl TextSet {
 
 pub fn run(
     preferences: Preferences,
-    world: World,
-    player_order: Vec<String>,
-    player_status_table: HashMap<String, PlayerStatus>,
+    player_list_file_path: PathBuf,
+    world_file_path: PathBuf,
 ) -> Result<()> {
+    let (player_order, player_status_table) = read_player_list_from_file(&player_list_file_path)?;
+    let world = read_world_from_file(&world_file_path)?;
     let stdout = termion::screen::AlternateScreen::from(io::stdout().into_raw_mode()?);
     let backend = TermionBackend::new(stdout);
     let mut terminal = Terminal::new(backend)?;

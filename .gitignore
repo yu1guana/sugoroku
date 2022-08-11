@@ -1,2 +1,9 @@
 /target
 completion_script/*_completion_script_of_sugoroku.sh
+sugoroku_examples/*.tex
+sugoroku_examples/*.pdf
+sugoroku_examples/*.log
+sugoroku_examples/*.fls
+sugoroku_examples/*.dvi
+sugoroku_examples/*.aux
+sugoroku_examples/*.fdb_latexmk

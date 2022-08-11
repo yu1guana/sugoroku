@@ -31,6 +31,9 @@ impl World {
     pub fn opening_msg(&self) -> &str {
         &self.opening_msg
     }
+    pub fn area_list(&self) -> &Vec<Area> {
+        &self.area_list
+    }
     pub fn start_description(&self, preferences: &Preferences) -> String {
         self.area_list
             .first()
