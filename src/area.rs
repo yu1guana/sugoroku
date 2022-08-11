@@ -33,8 +33,12 @@ impl Area {
     }
     pub fn area_description(&self, preferences: &Preferences) -> String {
         let mut text = self.description.clone();
-        text += "\n";
+        text += "\n\n";
+        match preferences.language() {
+            Language::Japanese => text += "効果\n",
+        }
         for effect in self.effect_list.iter() {
+            text += "- ";
             text += &effect.effect_text(preferences);
             text += "\n";
         }
@@ -96,7 +100,7 @@ impl NoEffect {
 impl AreaEffect for NoEffect {
     fn effect_text(&self, preferences: &Preferences) -> String {
         match preferences.language() {
-            Language::Japanese => format!(""),
+            Language::Japanese => format!("なし"),
         }
     }
     fn execute(
