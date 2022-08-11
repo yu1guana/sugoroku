@@ -1,8 +1,8 @@
 // Copyright (c) 2022 Yuichi Ishida
 
-use crate::area::Area;
-use crate::error::GeneralError;
-use crate::player_status::PlayerStatus;
+use crate::error::GameSystemError;
+use crate::game_system::area::Area;
+use crate::game_system::player_status::PlayerStatus;
 use crate::preferences::Preferences;
 use std::collections::HashMap;
 
@@ -44,23 +44,26 @@ impl World {
         current_player: &str,
         player_order: &[String],
         player_status_table: &mut HashMap<String, PlayerStatus>,
-    ) -> Result<String, GeneralError> {
+    ) -> Result<String, GameSystemError> {
         if dice > self.dice_max {
-            return Err(GeneralError::OutOfRangeDice(dice).into());
+            return Err(GameSystemError::OutOfRangeDice(dice).into());
         }
         player_status_table
             .get_mut(current_player)
-            .ok_or_else(|| GeneralError::NotFoundPlayer(current_player.to_owned()))?
+            .ok_or_else(|| GameSystemError::NotFoundPlayer(current_player.to_owned()))?
             .go_forward(dice);
         self.check_goal_player(player_status_table);
         let current_player_position = player_status_table
             .get_mut(current_player)
-            .ok_or_else(|| GeneralError::NotFoundPlayer(current_player.to_owned()))?
+            .ok_or_else(|| GameSystemError::NotFoundPlayer(current_player.to_owned()))?
             .position();
         self.area_list
             .get(current_player_position)
             .ok_or_else(|| {
-                GeneralError::OutOfRangePosition(current_player.to_owned(), current_player_position)
+                GameSystemError::OutOfRangePosition(
+                    current_player.to_owned(),
+                    current_player_position,
+                )
             })?
             .execute(current_player, player_order, player_status_table)?;
         self.check_goal_player(player_status_table);
@@ -68,7 +71,10 @@ impl World {
             .area_list
             .get(current_player_position)
             .ok_or_else(|| {
-                GeneralError::OutOfRangePosition(current_player.to_owned(), current_player_position)
+                GameSystemError::OutOfRangePosition(
+                    current_player.to_owned(),
+                    current_player_position,
+                )
             })?
             .area_description(preferences))
     }

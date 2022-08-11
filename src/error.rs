@@ -1,7 +1,7 @@
 // Copyright (c) 2022 Yuichi Ishida
 
 #[derive(thiserror::Error, Debug)]
-pub enum GeneralError {
+pub enum GameSystemError {
     #[error("Player is not found: {0}")]
     NotFoundPlayer(String),
     #[error("Area type is not found: {0}")]

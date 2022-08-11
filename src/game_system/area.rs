@@ -1,7 +1,7 @@
 // Copyright (c) 2022 Yuichi Ishida
 
-use crate::error::GeneralError;
-use crate::player_status::PlayerStatus;
+use crate::error::GameSystemError;
+use crate::game_system::player_status::PlayerStatus;
 use crate::preferences::{Language, Preferences};
 use anyhow::Context;
 use std::collections::HashMap;
@@ -25,7 +25,7 @@ impl Area {
         current_player: &str,
         player_order: &[String],
         player_status_table: &mut HashMap<String, PlayerStatus>,
-    ) -> Result<(), GeneralError> {
+    ) -> Result<(), GameSystemError> {
         for effect in self.effect_list.iter() {
             effect.execute(current_player, player_order, player_status_table)?;
         }
@@ -54,7 +54,7 @@ pub trait AreaEffect: core::fmt::Debug {
         current_player: &str,
         player_order: &[String],
         player_status_table: &mut HashMap<String, PlayerStatus>,
-    ) -> Result<(), GeneralError>;
+    ) -> Result<(), GameSystemError>;
 }
 
 /// 文字列からAreaEffectを作成
@@ -85,7 +85,7 @@ pub fn try_make_area_effect(
                 .with_context(|| "failed to parse settings of DisadvanceSelf from String.\nFormat: <num_disadvance: usize>")?;
             Ok(Box::new(DisadvanceSelf::new(num_disadvance)))
         }
-        _ => Err(GeneralError::NotFoundAreaType(area_type.to_owned()).into()),
+        _ => Err(GameSystemError::NotFoundAreaType(area_type.to_owned()).into()),
     }
 }
 
@@ -108,7 +108,7 @@ impl AreaEffect for NoEffect {
         _current_player: &str,
         _player_order: &[String],
         _player_status_list: &mut HashMap<String, PlayerStatus>,
-    ) -> Result<(), GeneralError> {
+    ) -> Result<(), GameSystemError> {
         Ok(())
     }
 }
@@ -136,10 +136,10 @@ impl AreaEffect for SkipSelf {
         current_player: &str,
         _player_order: &[String],
         player_status_table: &mut HashMap<String, PlayerStatus>,
-    ) -> Result<(), GeneralError> {
+    ) -> Result<(), GameSystemError> {
         player_status_table
             .get_mut(current_player)
-            .ok_or_else(|| GeneralError::NotFoundPlayer(current_player.to_owned()))?
+            .ok_or_else(|| GameSystemError::NotFoundPlayer(current_player.to_owned()))?
             .add_num_skip(self.num_skip);
         Ok(())
     }
@@ -168,10 +168,10 @@ impl AreaEffect for AdvanceSelf {
         current_player: &str,
         _player_order: &[String],
         player_status_table: &mut HashMap<String, PlayerStatus>,
-    ) -> Result<(), GeneralError> {
+    ) -> Result<(), GameSystemError> {
         player_status_table
             .get_mut(current_player)
-            .ok_or_else(|| GeneralError::NotFoundPlayer(current_player.to_owned()))?
+            .ok_or_else(|| GameSystemError::NotFoundPlayer(current_player.to_owned()))?
             .go_forward(self.num_advance);
         Ok(())
     }
@@ -200,10 +200,10 @@ impl AreaEffect for DisadvanceSelf {
         current_player: &str,
         _player_order: &[String],
         player_status_table: &mut HashMap<String, PlayerStatus>,
-    ) -> Result<(), GeneralError> {
+    ) -> Result<(), GameSystemError> {
         player_status_table
             .get_mut(current_player)
-            .ok_or_else(|| GeneralError::NotFoundPlayer(current_player.to_owned()))?
+            .ok_or_else(|| GameSystemError::NotFoundPlayer(current_player.to_owned()))?
             .go_backward(self.num_disadvance);
         Ok(())
     }

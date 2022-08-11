@@ -1,13 +1,14 @@
 // Copyright (c) 2022 Yuichi Ishida
 
-use crate::area::{try_make_area_effect, Area};
-use crate::error::GeneralError;
-use crate::player_status::PlayerStatus;
-use crate::world::World;
+use crate::error::GameSystemError;
+use crate::game_system::area::{try_make_area_effect, Area};
+use crate::game_system::player_status::PlayerStatus;
+use crate::game_system::world::World;
 use anyhow::{Context, Result};
 use serde_derive::Deserialize;
 use std::collections::HashMap;
 use std::fs;
+use std::path::Path;
 use toml;
 
 #[derive(Debug, Deserialize)]
@@ -48,17 +49,17 @@ struct AreaEffectDescription {
 }
 
 pub fn read_player_list_from_file(
-    file_name: &str,
+    file_path: &Path,
 ) -> Result<(Vec<String>, HashMap<String, PlayerStatus>)> {
-    let file_contents =
-        fs::read_to_string(file_name).with_context(|| format!("failed to read {}", file_name))?;
-    let player_description: PlayerListDescription =
-        toml::from_str(&file_contents).with_context(|| format!("failed to parse {}", file_name))?;
+    let file_contents = fs::read_to_string(file_path)
+        .with_context(|| format!("failed to read {}", file_path.display()))?;
+    let player_description: PlayerListDescription = toml::from_str(&file_contents)
+        .with_context(|| format!("failed to parse {}", file_path.display()))?;
     let mut player_status_table = HashMap::with_capacity(player_description.player.len());
     let mut player_order = Vec::with_capacity(player_description.player.len());
     for player in player_description.player {
         if player_status_table.contains_key(&player.name) {
-            return Err(GeneralError::DuplicatePlayer(player.name).into());
+            return Err(GameSystemError::DuplicatePlayer(player.name).into());
         } else {
             player_status_table.insert(player.name.to_owned(), PlayerStatus::default());
             player_order.push(player.name);
@@ -67,11 +68,11 @@ pub fn read_player_list_from_file(
     Ok((player_order, player_status_table))
 }
 
-pub fn read_world_from_file(file_name: &str) -> Result<World> {
-    let file_contents =
-        fs::read_to_string(file_name).with_context(|| format!("failed to read {}", file_name))?;
-    let world_description: WorldDescription =
-        toml::from_str(&file_contents).with_context(|| format!("failed to parse {}", file_name))?;
+pub fn read_world_from_file(file_path: &Path) -> Result<World> {
+    let file_contents = fs::read_to_string(file_path)
+        .with_context(|| format!("failed to read {}", file_path.display()))?;
+    let world_description: WorldDescription = toml::from_str(&file_contents)
+        .with_context(|| format!("failed to parse {}", file_path.display()))?;
     let mut area_list = vec![Area::new(
         world_description.general.start_description,
         vec![try_make_area_effect("NoEffect", "")?],

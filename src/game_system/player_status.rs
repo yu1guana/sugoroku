@@ -1,6 +1,6 @@
 // Copyright (c) 2022 Yuichi Ishida
 
-use crate::error::GeneralError;
+use crate::error::GameSystemError;
 use anyhow::Result;
 use std::collections::HashMap;
 
@@ -75,7 +75,7 @@ impl PlayerOrder for [String] {
         for player in player_cycle.take(self.len()) {
             match player_status_table
                 .get(player)
-                .ok_or_else(|| GeneralError::NotFoundPlayer(player.to_owned()))?
+                .ok_or_else(|| GameSystemError::NotFoundPlayer(player.to_owned()))?
                 .order_of_arrival()
             {
                 Some(_) => {}

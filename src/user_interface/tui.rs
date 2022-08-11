@@ -1,9 +1,9 @@
 // Copyright (c) 2022 Yuichi Ishida
 
-use crate::error::GeneralError;
-use crate::player_status::{PlayerOrder, PlayerStatus};
+use crate::error::GameSystemError;
+use crate::game_system::player_status::{PlayerOrder, PlayerStatus};
+use crate::game_system::world::World;
 use crate::preferences::{Language, Preferences};
-use crate::world::World;
 use anyhow::Result;
 use std::collections::HashMap;
 use std::io;
@@ -53,7 +53,7 @@ impl GameData {
     ) -> Result<Self> {
         let current_player = player_order
             .first()
-            .ok_or_else(|| GeneralError::NoPlayer)?
+            .ok_or_else(|| GameSystemError::NoPlayer)?
             .to_owned();
         Ok(Self {
             world,
@@ -98,7 +98,7 @@ impl TextSet {
         for player in player_order {
             let order_of_arrival = player_status_table
                 .get(player)
-                .ok_or_else(|| GeneralError::NotFoundPlayer(player.to_owned()))?
+                .ok_or_else(|| GameSystemError::NotFoundPlayer(player.to_owned()))?
                 .order_of_arrival();
             match order_of_arrival {
                 Some(x) => self.player_list.push_str(&format!("{0:>2} ", x)),
@@ -255,7 +255,7 @@ fn dice_roll<B: Backend>(
                                 }
                             }
                         }
-                        Err(GeneralError::OutOfRangeDice(dice)) => {
+                        Err(GameSystemError::OutOfRangeDice(dice)) => {
                             game_data.ui_status = UiStatus::DiceResult;
                             game_data.ui_status_buffer = UiStatus::DiceResult;
                             game_data
