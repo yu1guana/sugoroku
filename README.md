@@ -11,6 +11,26 @@
 
 `make_completion_script.sh`を実行してください。
 
+## 実行方法
+
+ゲームを実行する場合
+
+```sh
+sugoroku game <player list file> <world file>
+```
+
+ワールドファイルをLaTeX形式で出力する場合（同じディレクトリに拡張子が`tex`に変更されたファイルが作成されます。既存の場合は上書きされます。）
+
+```sh
+sugoroku world-to-tex <world file>
+```
+
+ヘルプを見る場合
+
+```sh
+sugoroku
+```
+
 ## 入力ファイル
 
 プレイヤーリストとワールドが記述されたファイルがそれぞれ必要となります。
