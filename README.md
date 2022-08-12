@@ -35,7 +35,7 @@ sugoroku
 
 プレイヤーリストとワールドが記述されたファイルがそれぞれ必要となります。
 どちらもTOML形式で記述されます。
-[sugoroku\_examples](sugoroku_examples)に例を置いてあります。
+書き方と例は[sugoroku\_examples](sugoroku_examples)に置いてあります。
 
 ## 現在設定できるエリア効果
 
