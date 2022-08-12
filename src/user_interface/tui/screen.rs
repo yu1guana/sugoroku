@@ -1,7 +1,7 @@
 // Copyright (c) 2022 Yuichi Ishida
 
 use crate::preferences::{Language, Preferences};
-use crate::user_interface::tui::{GameData, UiStatus};
+use crate::user_interface::tui::status::{GameData, UiStatus};
 use tui::backend::Backend;
 use tui::layout::{Alignment, Constraint, Direction, Layout};
 use tui::terminal::Frame;

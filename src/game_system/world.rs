@@ -31,6 +31,9 @@ impl World {
     pub fn opening_msg(&self) -> &str {
         &self.opening_msg
     }
+    pub fn dice_max(&self) -> usize {
+        self.dice_max
+    }
     pub fn area_list(&self) -> &Vec<Area> {
         &self.area_list
     }
@@ -48,7 +51,7 @@ impl World {
         player_order: &[String],
         player_status_table: &mut HashMap<String, PlayerStatus>,
     ) -> Result<String, GameSystemError> {
-        if dice > self.dice_max {
+        if dice < 1 || self.dice_max < dice {
             return Err(GameSystemError::OutOfRangeDice(dice).into());
         }
         player_status_table
