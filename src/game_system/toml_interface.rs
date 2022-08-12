@@ -77,16 +77,25 @@ pub fn read_world_from_file(file_path: &Path) -> Result<World> {
         world_description.general.start_description,
         vec![Box::new(NoEffect::new())],
     )];
-    for area_description in world_description.area.into_iter() {
-        let area_effect_list: Vec<Box<dyn AreaEffect>> =
-            if let Some(area_effect_description_list) = area_description.effect {
-                area_effect_description_list
-                    .into_iter()
-                    .map(|area_effect_description| <_>::from_str(&area_effect_description.element))
-                    .collect::<Result<_>>()?
-            } else {
-                vec![Box::new(NoEffect::new())]
-            };
+    for (i_area, area_description) in world_description.area.into_iter().enumerate() {
+        let mut area_effect_list = Vec::<Box<dyn AreaEffect>>::new();
+        if let Some(area_effect_description_list) = area_description.effect {
+            for (i_effect, area_effect_description) in
+                area_effect_description_list.into_iter().enumerate()
+            {
+                area_effect_list.push(
+                    <_>::from_str(&area_effect_description.element).with_context(|| {
+                        format!(
+                            "failed to parse effect {} of area {}",
+                            i_effect + 1,
+                            i_area + 1
+                        )
+                    })?,
+                )
+            }
+        } else {
+            area_effect_list.push(Box::new(NoEffect::new()));
+        };
         area_list.push(Area::new(area_description.description, area_effect_list));
     }
     area_list.push(Area::new(
