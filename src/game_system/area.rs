@@ -88,14 +88,7 @@ impl FromStr for Box<dyn AreaEffect> {
         }
         let effect_name = area_effect_strings.get(0).unwrap();
         let effect_parameters = area_effect_strings.get(1).unwrap();
-        parse_effect!(
-            effect_name,
-            effect_parameters,
-            NoEffect,
-            SkipSelf,
-            PushSelf,
-            PullSelf
-        )
+        parse_effect!(effect_name, effect_parameters, SkipSelf, PushSelf, PullSelf)
     }
 }
 
@@ -139,11 +132,8 @@ fn try_get_key_value_list(
 #[derive(Clone, Debug)]
 pub struct NoEffect {}
 impl NoEffect {
-    fn new() -> Self {
+    pub fn new() -> Self {
         Self {}
-    }
-    fn input_format() -> &'static str {
-        "`NoEffect:`"
     }
 }
 impl AreaEffect for NoEffect {
@@ -159,16 +149,6 @@ impl AreaEffect for NoEffect {
         _player_status_list: &mut HashMap<String, PlayerStatus>,
     ) -> Result<(), GameSystemError> {
         Ok(())
-    }
-}
-impl FromStr for NoEffect {
-    type Err = anyhow::Error;
-    fn from_str(effect_parameters: &str) -> Result<Self, Self::Err> {
-        if !effect_parameters.is_empty() {
-            Err(anyhow!("parameter must not exist.").into())
-        } else {
-            Ok(Self::new())
-        }
     }
 }
 

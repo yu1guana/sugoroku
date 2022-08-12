@@ -1,7 +1,7 @@
 // Copyright (c) 2022 Yuichi Ishida
 
 use crate::error::GameSystemError;
-use crate::game_system::area::{Area, AreaEffect};
+use crate::game_system::area::{Area, AreaEffect, NoEffect};
 use crate::game_system::player_status::PlayerStatus;
 use crate::game_system::world::World;
 use anyhow::{Context, Result};
@@ -75,24 +75,23 @@ pub fn read_world_from_file(file_path: &Path) -> Result<World> {
         .with_context(|| format!("failed to parse {}", file_path.display()))?;
     let mut area_list = vec![Area::new(
         world_description.general.start_description,
-        vec![Box::<dyn AreaEffect>::from_str("NoEffect:")?],
+        vec![Box::new(NoEffect::new())],
     )];
     for area_description in world_description.area.into_iter() {
-        let area_effect_list = if let Some(area_effect_description_list) = area_description.effect {
-            area_effect_description_list
-                .into_iter()
-                .map(|area_effect_description| {
-                    Box::<dyn AreaEffect>::from_str(&area_effect_description.element)
-                })
-                .collect::<Result<_>>()?
-        } else {
-            vec![Box::<dyn AreaEffect>::from_str("NoEffect:")?]
-        };
+        let area_effect_list: Vec<Box<dyn AreaEffect>> =
+            if let Some(area_effect_description_list) = area_description.effect {
+                area_effect_description_list
+                    .into_iter()
+                    .map(|area_effect_description| <_>::from_str(&area_effect_description.element))
+                    .collect::<Result<_>>()?
+            } else {
+                vec![Box::new(NoEffect::new())]
+            };
         area_list.push(Area::new(area_description.description, area_effect_list));
     }
     area_list.push(Area::new(
         world_description.general.goal_description,
-        vec![Box::<dyn AreaEffect>::from_str("NoEffect:")?],
+        vec![Box::new(NoEffect::new())],
     ));
     Ok(World::new(
         world_description.general.title,
