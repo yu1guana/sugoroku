@@ -88,7 +88,16 @@ impl FromStr for Box<dyn AreaEffect> {
         }
         let effect_name = area_effect_strings.get(0).unwrap();
         let effect_parameters = area_effect_strings.get(1).unwrap();
-        parse_effect!(effect_name, effect_parameters, SkipSelf, PushSelf, PullSelf)
+        parse_effect!(
+            effect_name,
+            effect_parameters,
+            GoToStart,
+            SkipSelf,
+            PushSelf,
+            PushOthersAll,
+            PullSelf,
+            PullOthersAll
+        )
     }
 }
 
@@ -152,25 +161,31 @@ impl AreaEffect for NoEffect {
     }
 }
 
-/// 次回以降プレイヤーをスキップする
-///
-/// ステージ作成時にはsetteingsに休む回数を記入する。
+/// 振り出しに戻る
+/// 入力形式は`GoToStart:`
 #[derive(Clone, Debug)]
-pub struct SkipSelf {
-    num_skip: u8,
-}
-impl SkipSelf {
-    fn new(num_skip: u8) -> Self {
-        Self { num_skip }
+pub struct GoToStart {}
+impl GoToStart {
+    fn new() -> Self {
+        Self {}
     }
     fn input_format() -> &'static str {
-        "`SkipSelf: times = <u8>`"
+        "`GoToStart:`"
     }
 }
-impl AreaEffect for SkipSelf {
+impl FromStr for GoToStart {
+    type Err = anyhow::Error;
+    fn from_str(effect_parameters: &str) -> Result<Self, Self::Err> {
+        if !effect_parameters.is_empty() {
+            return Err(anyhow!("parameters must not exist"));
+        }
+        Ok(Self::new())
+    }
+}
+impl AreaEffect for GoToStart {
     fn effect_text(&self, preferences: &Preferences) -> String {
         match preferences.language() {
-            Language::Japanese => format!("プレイヤーの休みを{}回追加。", self.num_skip),
+            Language::Japanese => format!("振り出しに戻る。"),
         }
     }
     fn execute(
@@ -182,8 +197,24 @@ impl AreaEffect for SkipSelf {
         player_status_table
             .get_mut(current_player)
             .ok_or_else(|| GameSystemError::NotFoundPlayer(current_player.to_owned()))?
-            .add_num_skip(self.num_skip);
+            .set_position(0);
         Ok(())
+    }
+}
+
+/// 次回以降プレイヤーをスキップする
+///
+/// 入力形式は`SkipSelf: times = <u8>`
+#[derive(Clone, Debug)]
+pub struct SkipSelf {
+    num_skip: u8,
+}
+impl SkipSelf {
+    fn new(num_skip: u8) -> Self {
+        Self { num_skip }
+    }
+    fn input_format() -> &'static str {
+        "`SkipSelf: times = <u8>`"
     }
 }
 impl FromStr for SkipSelf {
@@ -206,26 +237,10 @@ impl FromStr for SkipSelf {
         Ok(Self::new(num_skip))
     }
 }
-
-/// プレイヤーを進める
-///
-/// ステージ作成時にはsetteingsに進む数を記入する。
-#[derive(Clone, Debug)]
-pub struct PushSelf {
-    num_advance: usize,
-}
-impl PushSelf {
-    pub fn new(num_advance: usize) -> Self {
-        Self { num_advance }
-    }
-    fn input_format() -> &'static str {
-        "`PushSelf: num = <usize>`"
-    }
-}
-impl AreaEffect for PushSelf {
+impl AreaEffect for SkipSelf {
     fn effect_text(&self, preferences: &Preferences) -> String {
         match preferences.language() {
-            Language::Japanese => format!("プレイヤーは{} マス進む。", self.num_advance),
+            Language::Japanese => format!("プレイヤーの休みを{}回追加。", self.num_skip),
         }
     }
     fn execute(
@@ -237,8 +252,24 @@ impl AreaEffect for PushSelf {
         player_status_table
             .get_mut(current_player)
             .ok_or_else(|| GameSystemError::NotFoundPlayer(current_player.to_owned()))?
-            .go_forward(self.num_advance);
+            .add_num_skip(self.num_skip);
         Ok(())
+    }
+}
+
+/// プレイヤーを進める
+///
+/// 入力形式は `PushSelf: num = <usize>`
+#[derive(Clone, Debug)]
+pub struct PushSelf {
+    num_step: usize,
+}
+impl PushSelf {
+    pub fn new(num_step: usize) -> Self {
+        Self { num_step }
+    }
+    fn input_format() -> &'static str {
+        "`PushSelf: num = <usize>`"
     }
 }
 impl FromStr for PushSelf {
@@ -261,26 +292,10 @@ impl FromStr for PushSelf {
         Ok(Self::new(num_push))
     }
 }
-
-/// プレイヤーを戻す
-///
-/// ステージ作成時にはsetteingsに戻す数を記入する。
-#[derive(Clone, Debug)]
-pub struct PullSelf {
-    num_disadvance: usize,
-}
-impl PullSelf {
-    pub fn new(num_disadvance: usize) -> Self {
-        Self { num_disadvance }
-    }
-    fn input_format() -> &'static str {
-        "`PullSelf: num = <usize>`"
-    }
-}
-impl AreaEffect for PullSelf {
+impl AreaEffect for PushSelf {
     fn effect_text(&self, preferences: &Preferences) -> String {
         match preferences.language() {
-            Language::Japanese => format!("プレイヤーは{} マス戻る。", self.num_disadvance),
+            Language::Japanese => format!("プレイヤーは{} マス進む。", self.num_step),
         }
     }
     fn execute(
@@ -292,11 +307,85 @@ impl AreaEffect for PullSelf {
         player_status_table
             .get_mut(current_player)
             .ok_or_else(|| GameSystemError::NotFoundPlayer(current_player.to_owned()))?
-            .go_backward(self.num_disadvance);
+            .go_forward(self.num_step);
         Ok(())
     }
 }
 
+/// 自分以外のプレイヤーを進める
+///
+/// 入力形式は `PushOthersAll: num = <usize>`
+#[derive(Clone, Debug)]
+pub struct PushOthersAll {
+    num_step: usize,
+}
+impl PushOthersAll {
+    pub fn new(num_step: usize) -> Self {
+        Self { num_step }
+    }
+    fn input_format() -> &'static str {
+        "`PushOthersAll: num = <usize>`"
+    }
+}
+impl FromStr for PushOthersAll {
+    type Err = anyhow::Error;
+    fn from_str(effect_parameters: &str) -> Result<Self, Self::Err> {
+        let mut num_push = 0;
+        let key_value_list = try_get_key_value_list(effect_parameters)?;
+        for (key, value) in key_value_list {
+            match key.as_str() {
+                "num" => {
+                    num_push = value
+                        .parse()
+                        .with_context(|| err_msg_parse_parameter!(key))?;
+                }
+                _ => {
+                    return Err(anyhow!(err_msg_wrong_parameter!(key)));
+                }
+            }
+        }
+        Ok(Self::new(num_push))
+    }
+}
+impl AreaEffect for PushOthersAll {
+    fn effect_text(&self, preferences: &Preferences) -> String {
+        match preferences.language() {
+            Language::Japanese => format!("自分以外のプレイヤーは{} マス進む。", self.num_step),
+        }
+    }
+    fn execute(
+        &self,
+        current_player: &str,
+        player_order: &[String],
+        player_status_table: &mut HashMap<String, PlayerStatus>,
+    ) -> Result<(), GameSystemError> {
+        for player in player_order {
+            if player != current_player {
+                player_status_table
+                    .get_mut(player)
+                    .ok_or_else(|| GameSystemError::NotFoundPlayer(player.to_owned()))?
+                    .go_forward(self.num_step);
+            }
+        }
+        Ok(())
+    }
+}
+
+/// プレイヤーを戻す
+///
+/// 入力形式は `PullSelf: num = <usize>`
+#[derive(Clone, Debug)]
+pub struct PullSelf {
+    num_step: usize,
+}
+impl PullSelf {
+    pub fn new(num_step: usize) -> Self {
+        Self { num_step }
+    }
+    fn input_format() -> &'static str {
+        "`PullSelf: num = <usize>`"
+    }
+}
 impl FromStr for PullSelf {
     type Err = anyhow::Error;
     fn from_str(effect_parameters: &str) -> Result<Self, Self::Err> {
@@ -315,5 +404,83 @@ impl FromStr for PullSelf {
             }
         }
         Ok(Self::new(num_push))
+    }
+}
+impl AreaEffect for PullSelf {
+    fn effect_text(&self, preferences: &Preferences) -> String {
+        match preferences.language() {
+            Language::Japanese => format!("プレイヤーは{} マス戻る。", self.num_step),
+        }
+    }
+    fn execute(
+        &self,
+        current_player: &str,
+        _player_order: &[String],
+        player_status_table: &mut HashMap<String, PlayerStatus>,
+    ) -> Result<(), GameSystemError> {
+        player_status_table
+            .get_mut(current_player)
+            .ok_or_else(|| GameSystemError::NotFoundPlayer(current_player.to_owned()))?
+            .go_backward(self.num_step);
+        Ok(())
+    }
+}
+
+/// 自分以外のプレイヤーを戻す
+///
+/// 入力形式は `PullOthersAll: num = <usize>`
+#[derive(Clone, Debug)]
+pub struct PullOthersAll {
+    num_step: usize,
+}
+impl PullOthersAll {
+    pub fn new(num_step: usize) -> Self {
+        Self { num_step }
+    }
+    fn input_format() -> &'static str {
+        "`PullOthersAll: num = <usize>`"
+    }
+}
+impl FromStr for PullOthersAll {
+    type Err = anyhow::Error;
+    fn from_str(effect_parameters: &str) -> Result<Self, Self::Err> {
+        let mut num_push = 0;
+        let key_value_list = try_get_key_value_list(effect_parameters)?;
+        for (key, value) in key_value_list {
+            match key.as_str() {
+                "num" => {
+                    num_push = value
+                        .parse()
+                        .with_context(|| err_msg_parse_parameter!(key))?;
+                }
+                _ => {
+                    return Err(anyhow!(err_msg_wrong_parameter!(key)));
+                }
+            }
+        }
+        Ok(Self::new(num_push))
+    }
+}
+impl AreaEffect for PullOthersAll {
+    fn effect_text(&self, preferences: &Preferences) -> String {
+        match preferences.language() {
+            Language::Japanese => format!("自分以外のプレイヤーは{} マス戻す。", self.num_step),
+        }
+    }
+    fn execute(
+        &self,
+        current_player: &str,
+        player_order: &[String],
+        player_status_table: &mut HashMap<String, PlayerStatus>,
+    ) -> Result<(), GameSystemError> {
+        for player in player_order {
+            if player != current_player {
+                player_status_table
+                    .get_mut(player)
+                    .ok_or_else(|| GameSystemError::NotFoundPlayer(player.to_owned()))?
+                    .go_backward(self.num_step);
+            }
+        }
+        Ok(())
     }
 }
