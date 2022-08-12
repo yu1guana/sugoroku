@@ -1,3 +1,3 @@
 #!/bin/bash
 
-cargo doc --no-deps
+cargo doc --no-deps --document-private-items

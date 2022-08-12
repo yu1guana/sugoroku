@@ -3,8 +3,9 @@
 use crate::error::GameSystemError;
 use crate::game_system::player_status::PlayerStatus;
 use crate::preferences::{Language, Preferences};
-use anyhow::Context;
+use anyhow::{anyhow, Context};
 use std::collections::HashMap;
+use std::str::FromStr;
 
 /// 各マスを表す
 #[derive(Debug)]
@@ -57,44 +58,92 @@ pub trait AreaEffect: core::fmt::Debug {
     ) -> Result<(), GameSystemError>;
 }
 
-/// 文字列からAreaEffectを作成
-pub fn try_make_area_effect(
-    area_type: &str,
-    settings: &str,
-) -> Result<Box<dyn AreaEffect>, anyhow::Error> {
-    match area_type {
-        "NoEffect" => Ok(Box::new(NoEffect::new())),
-        "SkipSelf" => {
-            let num_skip = settings
-                .replace(char::is_whitespace, "")
-                .parse()
-                .with_context(|| {
-                    "failed to parse settings of SkipSelf from String.\nFormat: <num_skip: u8>"
-                })?;
-            Ok(Box::new(SkipSelf::new(num_skip)))
+impl FromStr for Box<dyn AreaEffect> {
+    type Err = anyhow::Error;
+    fn from_str(area_effect_str: &str) -> Result<Self, Self::Err> {
+        macro_rules! parse_effect {
+            ($effect_name_str:expr, $effect_parameters_str: expr, $($effect_names:ident),+) => {
+                match $effect_name_str.as_str() {
+                    $(stringify!($effect_names) => {
+                        Ok(Box::new(
+                                $effect_names::from_str($effect_parameters_str)
+                                .with_context(||
+                                    format!("faied to parse {} (the correct format is {})", stringify!($effect_names), $effect_names::input_format())
+                                )?
+                        ))
+                    }),+
+                    _ => Err(GameSystemError::NotFoundAreaType($effect_name_str.to_owned()).into()),
+                }
+            };
         }
-        "PushSelf" => {
-            let num_advance = settings.replace(char::is_whitespace,"")
-                .parse()
-                .with_context(|| "failed to parse settings of PushSelf from String.\nFormat: <num_advance: usize>")?;
-            Ok(Box::new(PushSelf::new(num_advance)))
+        let area_effect_strings: Vec<_> = area_effect_str
+            .replace(char::is_whitespace, "")
+            .split(':')
+            .map(|s| s.to_owned())
+            .collect();
+        if area_effect_strings.len() != 2 {
+            return Err(anyhow!(
+                "failed to parse an area effect (the correct format is `EffectName: [parameters...]`)."
+            ));
         }
-        "PullSelf" => {
-            let num_disadvance = settings.replace(char::is_whitespace,"")
-                .parse()
-                .with_context(|| "failed to parse settings of PullSelf from String.\nFormat: <num_disadvance: usize>")?;
-            Ok(Box::new(PullSelf::new(num_disadvance)))
-        }
-        _ => Err(GameSystemError::NotFoundAreaType(area_type.to_owned()).into()),
+        let effect_name = area_effect_strings.get(0).unwrap();
+        let effect_parameters = area_effect_strings.get(1).unwrap();
+        parse_effect!(
+            effect_name,
+            effect_parameters,
+            NoEffect,
+            SkipSelf,
+            PushSelf,
+            PullSelf
+        )
     }
 }
 
+macro_rules! err_msg_wrong_parameter {
+    ($key:expr) => {
+        format!("{} is a wrong parameter", $key)
+    };
+}
+
+macro_rules! err_msg_parse_parameter {
+    ($key:expr) => {
+        format!("failed to parse a prameter `{}`", $key)
+    };
+}
+
+fn try_get_key_value_list(
+    effect_parameters: &str,
+) -> Result<HashMap<String, String>, anyhow::Error> {
+    let mut key_value_list = HashMap::new();
+    for key_value_str in effect_parameters.split(',') {
+        let key_value_strings: Vec<_> = key_value_str.split('=').map(|s| s.to_owned()).collect();
+        if key_value_strings.len() != 2 {
+            return Err(anyhow!(
+                "failed to parse area effect parameters (the correct format is comma separated `key = value` list)."
+            ));
+        }
+        let key = key_value_strings.get(0).unwrap().to_owned();
+        let value = key_value_strings.get(1).unwrap().to_owned();
+        if key_value_list.contains_key(&key) {
+            return Err(anyhow!(format!(
+                "failed to parse area effect parameters (`{}` is duplicated).",
+                key
+            )));
+        }
+        key_value_list.insert(key, value);
+    }
+    Ok(key_value_list)
+}
+
 /// 何も起こらない
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct NoEffect {}
 impl NoEffect {
     fn new() -> Self {
         Self {}
+    }
+    fn input_format() -> &'static str {
+        "`NoEffect:`"
     }
 }
 impl AreaEffect for NoEffect {
@@ -112,17 +161,30 @@ impl AreaEffect for NoEffect {
         Ok(())
     }
 }
+impl FromStr for NoEffect {
+    type Err = anyhow::Error;
+    fn from_str(effect_parameters: &str) -> Result<Self, Self::Err> {
+        if !effect_parameters.is_empty() {
+            Err(anyhow!("parameter must not exist.").into())
+        } else {
+            Ok(Self::new())
+        }
+    }
+}
 
 /// 次回以降プレイヤーをスキップする
 ///
 /// ステージ作成時にはsetteingsに休む回数を記入する。
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct SkipSelf {
     num_skip: u8,
 }
 impl SkipSelf {
     fn new(num_skip: u8) -> Self {
         Self { num_skip }
+    }
+    fn input_format() -> &'static str {
+        "`SkipSelf: times = <u8>`"
     }
 }
 impl AreaEffect for SkipSelf {
@@ -144,6 +206,26 @@ impl AreaEffect for SkipSelf {
         Ok(())
     }
 }
+impl FromStr for SkipSelf {
+    type Err = anyhow::Error;
+    fn from_str(effect_parameters: &str) -> Result<Self, Self::Err> {
+        let mut num_skip = 0;
+        let key_value_list = try_get_key_value_list(effect_parameters)?;
+        for (key, value) in key_value_list {
+            match key.as_str() {
+                "times" => {
+                    num_skip = value
+                        .parse()
+                        .with_context(|| err_msg_parse_parameter!(key))?;
+                }
+                _ => {
+                    return Err(anyhow!(err_msg_wrong_parameter!(key)));
+                }
+            }
+        }
+        Ok(Self::new(num_skip))
+    }
+}
 
 /// プレイヤーを進める
 ///
@@ -155,6 +237,9 @@ pub struct PushSelf {
 impl PushSelf {
     pub fn new(num_advance: usize) -> Self {
         Self { num_advance }
+    }
+    fn input_format() -> &'static str {
+        "`PushSelf: num = <usize>`"
     }
 }
 impl AreaEffect for PushSelf {
@@ -176,6 +261,26 @@ impl AreaEffect for PushSelf {
         Ok(())
     }
 }
+impl FromStr for PushSelf {
+    type Err = anyhow::Error;
+    fn from_str(effect_parameters: &str) -> Result<Self, Self::Err> {
+        let mut num_push = 0;
+        let key_value_list = try_get_key_value_list(effect_parameters)?;
+        for (key, value) in key_value_list {
+            match key.as_str() {
+                "num" => {
+                    num_push = value
+                        .parse()
+                        .with_context(|| err_msg_parse_parameter!(key))?;
+                }
+                _ => {
+                    return Err(anyhow!(err_msg_wrong_parameter!(key)));
+                }
+            }
+        }
+        Ok(Self::new(num_push))
+    }
+}
 
 /// プレイヤーを戻す
 ///
@@ -187,6 +292,9 @@ pub struct PullSelf {
 impl PullSelf {
     pub fn new(num_disadvance: usize) -> Self {
         Self { num_disadvance }
+    }
+    fn input_format() -> &'static str {
+        "`PullSelf: num = <usize>`"
     }
 }
 impl AreaEffect for PullSelf {
@@ -206,5 +314,26 @@ impl AreaEffect for PullSelf {
             .ok_or_else(|| GameSystemError::NotFoundPlayer(current_player.to_owned()))?
             .go_backward(self.num_disadvance);
         Ok(())
+    }
+}
+
+impl FromStr for PullSelf {
+    type Err = anyhow::Error;
+    fn from_str(effect_parameters: &str) -> Result<Self, Self::Err> {
+        let mut num_push = 0;
+        let key_value_list = try_get_key_value_list(effect_parameters)?;
+        for (key, value) in key_value_list {
+            match key.as_str() {
+                "num" => {
+                    num_push = value
+                        .parse()
+                        .with_context(|| err_msg_parse_parameter!(key))?;
+                }
+                _ => {
+                    return Err(anyhow!(err_msg_wrong_parameter!(key)));
+                }
+            }
+        }
+        Ok(Self::new(num_push))
     }
 }

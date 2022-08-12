@@ -16,11 +16,17 @@ Area	game_system/area.rs	/^pub struct Area {$/;"	s
 AreaDescription	game_system/toml_interface.rs	/^struct AreaDescription {$/;"	s
 AreaEffect	game_system/area.rs	/^pub trait AreaEffect: core::fmt::Debug {$/;"	i
 AreaEffectDescription	game_system/toml_interface.rs	/^struct AreaEffectDescription {$/;"	s
+Box	game_system/area.rs	/^impl FromStr for Box<dyn AreaEffect> {$/;"	c
 Cli	activate.rs	/^impl Cli {$/;"	c
 Cli	activate.rs	/^pub struct Cli {$/;"	s
 DiceResult	user_interface/tui/status.rs	/^    DiceResult,$/;"	e	enum:UiStatus
 DiceRoll	user_interface/tui/status.rs	/^    DiceRoll,$/;"	e	enum:UiStatus
 DuplicatePlayer	error.rs	/^    DuplicatePlayer(String),$/;"	e	enum:GameSystemError
+Err	game_system/area.rs	/^    type Err = anyhow::Error;$/;"	t	implementation:Box
+Err	game_system/area.rs	/^    type Err = anyhow::Error;$/;"	t	implementation:NoEffect
+Err	game_system/area.rs	/^    type Err = anyhow::Error;$/;"	t	implementation:PullSelf
+Err	game_system/area.rs	/^    type Err = anyhow::Error;$/;"	t	implementation:PushSelf
+Err	game_system/area.rs	/^    type Err = anyhow::Error;$/;"	t	implementation:SkipSelf
 Game	activate.rs	/^    Game {$/;"	e	enum:Action
 GameData	user_interface/tui/status.rs	/^impl GameData {$/;"	c
 GameData	user_interface/tui/status.rs	/^pub struct GameData {$/;"	s
@@ -30,6 +36,7 @@ Japanese	preferences.rs	/^    Japanese,$/;"	e	enum:Language
 Language	preferences.rs	/^impl Default for Language {$/;"	c
 Language	preferences.rs	/^pub enum Language {$/;"	g
 NoEffect	game_system/area.rs	/^impl AreaEffect for NoEffect {$/;"	c
+NoEffect	game_system/area.rs	/^impl FromStr for NoEffect {$/;"	c
 NoEffect	game_system/area.rs	/^impl NoEffect {$/;"	c
 NoEffect	game_system/area.rs	/^pub struct NoEffect {}$/;"	s
 NoPlayer	error.rs	/^    NoPlayer,$/;"	e	enum:GameSystemError
@@ -45,14 +52,17 @@ PlayerStatus	game_system/player_status.rs	/^pub struct PlayerStatus {$/;"	s
 Preferences	preferences.rs	/^impl Preferences {$/;"	c
 Preferences	preferences.rs	/^pub struct Preferences {$/;"	s
 PullSelf	game_system/area.rs	/^impl AreaEffect for PullSelf {$/;"	c
+PullSelf	game_system/area.rs	/^impl FromStr for PullSelf {$/;"	c
 PullSelf	game_system/area.rs	/^impl PullSelf {$/;"	c
 PullSelf	game_system/area.rs	/^pub struct PullSelf {$/;"	s
 PushSelf	game_system/area.rs	/^impl AreaEffect for PushSelf {$/;"	c
+PushSelf	game_system/area.rs	/^impl FromStr for PushSelf {$/;"	c
 PushSelf	game_system/area.rs	/^impl PushSelf {$/;"	c
 PushSelf	game_system/area.rs	/^pub struct PushSelf {$/;"	s
 QuitMenu	user_interface/tui/status.rs	/^    QuitMenu,$/;"	e	enum:UiStatus
 Skip	user_interface/tui/status.rs	/^    Skip,$/;"	e	enum:UiStatus
 SkipSelf	game_system/area.rs	/^impl AreaEffect for SkipSelf {$/;"	c
+SkipSelf	game_system/area.rs	/^impl FromStr for SkipSelf {$/;"	c
 SkipSelf	game_system/area.rs	/^impl SkipSelf {$/;"	c
 SkipSelf	game_system/area.rs	/^pub struct SkipSelf {$/;"	s
 StatusDescription	game_system/toml_interface.rs	/^struct StatusDescription {$/;"	s
@@ -88,13 +98,16 @@ dice_result	user_interface/tui/status.rs	/^    fn dice_result(&mut self, prefere
 dice_roll	game_system/world.rs	/^    pub fn dice_roll($/;"	P	implementation:World
 dice_roll	user_interface/tui/status.rs	/^    fn dice_roll(&mut self, preferences: &Preferences, key: Key) -> Result<()> {$/;"	P	implementation:GameData
 dice_string	user_interface/tui/status.rs	/^    pub dice_string: String,$/;"	m	struct:TextSet
-effect	game_system/toml_interface.rs	/^    effect: Vec<AreaEffectDescription>,$/;"	m	struct:AreaDescription
+effect	game_system/toml_interface.rs	/^    effect: Option<Vec<AreaEffectDescription>>,$/;"	m	struct:AreaDescription
 effect_list	game_system/area.rs	/^    effect_list: Vec<Box<dyn AreaEffect>>,$/;"	m	struct:Area
 effect_text	game_system/area.rs	/^    fn effect_text(&self, preferences: &Preferences) -> String {$/;"	P	implementation:NoEffect
 effect_text	game_system/area.rs	/^    fn effect_text(&self, preferences: &Preferences) -> String {$/;"	P	implementation:PullSelf
 effect_text	game_system/area.rs	/^    fn effect_text(&self, preferences: &Preferences) -> String {$/;"	P	implementation:PushSelf
 effect_text	game_system/area.rs	/^    fn effect_text(&self, preferences: &Preferences) -> String {$/;"	P	implementation:SkipSelf
 effect_text	game_system/area.rs	/^    fn effect_text(&self, preferences: &Preferences) -> String;$/;"	P	interface:AreaEffect
+element	game_system/toml_interface.rs	/^    element: String,$/;"	m	struct:AreaEffectDescription
+err_msg_parse_parameter	game_system/area.rs	/^macro_rules! err_msg_parse_parameter {$/;"	M
+err_msg_wrong_parameter	game_system/area.rs	/^macro_rules! err_msg_wrong_parameter {$/;"	M
 error	lib.rs	/^mod error;$/;"	n
 execute	game_system/area.rs	/^    fn execute($/;"	P	implementation:NoEffect
 execute	game_system/area.rs	/^    fn execute($/;"	P	implementation:PullSelf
@@ -102,6 +115,11 @@ execute	game_system/area.rs	/^    fn execute($/;"	P	implementation:PushSelf
 execute	game_system/area.rs	/^    fn execute($/;"	P	implementation:SkipSelf
 execute	game_system/area.rs	/^    fn execute($/;"	P	interface:AreaEffect
 execute	game_system/area.rs	/^    pub fn execute($/;"	P	implementation:Area
+from_str	game_system/area.rs	/^    fn from_str(area_effect_str: &str) -> Result<Self, Self::Err> {$/;"	P	implementation:Box
+from_str	game_system/area.rs	/^    fn from_str(effect_parameters: &str) -> Result<Self, Self::Err> {$/;"	P	implementation:NoEffect
+from_str	game_system/area.rs	/^    fn from_str(effect_parameters: &str) -> Result<Self, Self::Err> {$/;"	P	implementation:PullSelf
+from_str	game_system/area.rs	/^    fn from_str(effect_parameters: &str) -> Result<Self, Self::Err> {$/;"	P	implementation:PushSelf
+from_str	game_system/area.rs	/^    fn from_str(effect_parameters: &str) -> Result<Self, Self::Err> {$/;"	P	implementation:SkipSelf
 game_finished	user_interface/tui/status.rs	/^    fn game_finished(&mut self, preferences: &Preferences, key: Key) -> Result<()> {$/;"	P	implementation:GameData
 game_system	lib.rs	/^mod game_system;$/;"	n
 general	game_system/toml_interface.rs	/^    general: WorldSettingDescription,$/;"	m	struct:WorldDescription
@@ -110,13 +128,16 @@ go_forward	game_system/player_status.rs	/^    pub fn go_forward(&mut self, n: us
 goal_description	game_system/toml_interface.rs	/^    goal_description: String,$/;"	m	struct:WorldSettingDescription
 guidance	user_interface/tui/status.rs	/^    pub guidance: String,$/;"	m	struct:TextSet
 init	user_interface/tui/status.rs	/^    pub fn init(&mut self, preferences: &Preferences) -> Result<()> {$/;"	P	implementation:GameData
+input_format	game_system/area.rs	/^    fn input_format() -> &'static str {$/;"	P	implementation:NoEffect
+input_format	game_system/area.rs	/^    fn input_format() -> &'static str {$/;"	P	implementation:PullSelf
+input_format	game_system/area.rs	/^    fn input_format() -> &'static str {$/;"	P	implementation:PushSelf
+input_format	game_system/area.rs	/^    fn input_format() -> &'static str {$/;"	P	implementation:SkipSelf
 language	preferences.rs	/^    language: Language,$/;"	m	struct:Preferences
 language	preferences.rs	/^    pub fn language(&self) -> Language {$/;"	P	implementation:Preferences
 main	bin/make_completion_script.rs	/^fn main() -> Result<()> {$/;"	f
 main	main.rs	/^fn main() -> Result<()> {$/;"	f
 main_window	user_interface/tui/status.rs	/^    pub main_window: String,$/;"	m	struct:TextSet
 message	user_interface/tui/status.rs	/^    pub message: String,$/;"	m	struct:TextSet
-name	game_system/toml_interface.rs	/^    name: String,$/;"	m	struct:AreaEffectDescription
 name	game_system/toml_interface.rs	/^    name: String,$/;"	m	struct:StatusDescription
 new	game_system/area.rs	/^    fn new() -> Self {$/;"	P	implementation:NoEffect
 new	game_system/area.rs	/^    fn new(num_skip: u8) -> Self {$/;"	P	implementation:SkipSelf
@@ -137,6 +158,7 @@ opening_msg	game_system/world.rs	/^    opening_msg: String,$/;"	m	struct:World
 opening_msg	game_system/world.rs	/^    pub fn opening_msg(&self) -> &str {$/;"	P	implementation:World
 order_of_arrival	game_system/player_status.rs	/^    order_of_arrival: Option<u8>,$/;"	m	struct:PlayerStatus
 order_of_arrival	game_system/player_status.rs	/^    pub fn order_of_arrival(&self) -> Option<u8> {$/;"	P	implementation:PlayerStatus
+parse_effect	game_system/area.rs	/^        macro_rules! parse_effect {$/;"	M	method:Box::from_str
 player	game_system/toml_interface.rs	/^    player: Vec<StatusDescription>,$/;"	m	struct:PlayerListDescription
 player_list	user_interface/tui/status.rs	/^    pub player_list: String,$/;"	m	struct:TextSet
 player_order	user_interface/tui/status.rs	/^    pub player_order: Vec<String>,$/;"	m	struct:GameData
@@ -161,7 +183,6 @@ set_prompt_dice_roll	user_interface/tui/status.rs	/^    fn set_prompt_dice_roll(
 set_prompt_enter	user_interface/tui/status.rs	/^    fn set_prompt_enter(&mut self, preferences: &Preferences) {$/;"	P	implementation:TextSet
 set_prompt_game_finish	user_interface/tui/status.rs	/^    fn set_prompt_game_finish(&mut self, preferences: &Preferences) {$/;"	P	implementation:TextSet
 set_skip_player	user_interface/tui/status.rs	/^    fn set_skip_player(&mut self, preferences: &Preferences, num_skip: u8) {$/;"	P	implementation:TextSet
-settings	game_system/toml_interface.rs	/^    settings: String,$/;"	m	struct:AreaEffectDescription
 shell	bin/make_completion_script.rs	/^    shell: Shell,$/;"	m	struct:AppArg
 skip	user_interface/tui/status.rs	/^    fn skip(&mut self, preferences: &Preferences, key: Key) -> Result<()> {$/;"	P	implementation:GameData
 start_description	game_system/toml_interface.rs	/^    start_description: String,$/;"	m	struct:WorldSettingDescription
@@ -177,7 +198,7 @@ title	game_system/world.rs	/^    title: String,$/;"	m	struct:World
 title_menu	user_interface/tui/status.rs	/^    fn title_menu(&mut self, _preferences: &Preferences, key: Key) -> Result<()> {$/;"	P	implementation:GameData
 toml_interface	game_system.rs	/^pub mod toml_interface;$/;"	n
 transition	user_interface/tui/status.rs	/^    pub fn transition(&mut self, preferences: &Preferences, key: Key) -> Result<bool> {$/;"	P	implementation:GameData
-try_make_area_effect	game_system/area.rs	/^pub fn try_make_area_effect($/;"	f
+try_get_key_value_list	game_system/area.rs	/^fn try_get_key_value_list($/;"	f
 try_new	user_interface/tui/status.rs	/^    pub fn try_new($/;"	P	implementation:GameData
 tui	user_interface.rs	/^pub mod tui;$/;"	n
 ui	user_interface/tui/screen.rs	/^pub fn ui<B: Backend>(frame: &mut Frame<B>, preferences: &Preferences, game_data: &GameData) {$/;"	f

@@ -1,7 +1,7 @@
 // Copyright (c) 2022 Yuichi Ishida
 
 use crate::error::GameSystemError;
-use crate::game_system::area::{try_make_area_effect, Area};
+use crate::game_system::area::{Area, AreaEffect};
 use crate::game_system::player_status::PlayerStatus;
 use crate::game_system::world::World;
 use anyhow::{Context, Result};
@@ -9,6 +9,7 @@ use serde_derive::Deserialize;
 use std::collections::HashMap;
 use std::fs;
 use std::path::Path;
+use std::str::FromStr;
 use toml;
 
 #[derive(Debug, Deserialize)]
@@ -39,13 +40,12 @@ struct WorldSettingDescription {
 #[derive(Debug, Deserialize)]
 struct AreaDescription {
     description: String,
-    effect: Vec<AreaEffectDescription>,
+    effect: Option<Vec<AreaEffectDescription>>,
 }
 
 #[derive(Debug, Deserialize)]
 struct AreaEffectDescription {
-    name: String,
-    settings: String,
+    element: String,
 }
 
 pub fn read_player_list_from_file(
@@ -75,24 +75,24 @@ pub fn read_world_from_file(file_path: &Path) -> Result<World> {
         .with_context(|| format!("failed to parse {}", file_path.display()))?;
     let mut area_list = vec![Area::new(
         world_description.general.start_description,
-        vec![try_make_area_effect("NoEffect", "")?],
+        vec![Box::<dyn AreaEffect>::from_str("NoEffect:")?],
     )];
     for area_description in world_description.area.into_iter() {
-        let area_effect_list = area_description
-            .effect
-            .into_iter()
-            .map(|area_effect_description| {
-                try_make_area_effect(
-                    &area_effect_description.name,
-                    &area_effect_description.settings,
-                )
-            })
-            .collect::<Result<_>>()?;
+        let area_effect_list = if let Some(area_effect_description_list) = area_description.effect {
+            area_effect_description_list
+                .into_iter()
+                .map(|area_effect_description| {
+                    Box::<dyn AreaEffect>::from_str(&area_effect_description.element)
+                })
+                .collect::<Result<_>>()?
+        } else {
+            vec![Box::<dyn AreaEffect>::from_str("NoEffect:")?]
+        };
         area_list.push(Area::new(area_description.description, area_effect_list));
     }
     area_list.push(Area::new(
         world_description.general.goal_description,
-        vec![try_make_area_effect("NoEffect", "")?],
+        vec![Box::<dyn AreaEffect>::from_str("NoEffect:")?],
     ));
     Ok(World::new(
         world_description.general.title,

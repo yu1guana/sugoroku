@@ -26,7 +26,7 @@ fn main() -> Result<()> {
     let name = app.get_name().to_owned();
     let script_file_path = Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("completion_script")
-        .join(arg.shell.to_string() + concat!("_complition_of_", env!("CARGO_PKG_NAME"), ".sh"));
+        .join(concat!(env!("CARGO_PKG_NAME"), "-completion.").to_owned() + &arg.shell.to_string());
 
     let mut writer = BufWriter::new(File::create(&script_file_path)?);
     generate(arg.shell, &mut app, name, &mut writer);
@@ -35,6 +35,11 @@ fn main() -> Result<()> {
         "A completion script is created (the file path is `{}`).",
         script_file_path.display()
     );
-    println!("Please read the sciprt using `source` command.");
+    match arg.shell {
+        Shell::Bash => println!("Please read the sciprt using `source` command."),
+        Shell::Zsh => println!("Please create a link of the sciprt into a path assigned by `fpath`, which is an environment variable."),
+        _ => {}
+    }
+
     Ok(())
 }

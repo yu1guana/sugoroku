@@ -8,41 +8,32 @@ dice_max = 4
 [[area]]
 description = "靴紐が切れた。"
 [[area.effect]]
-name = "SkipSelf"
-settings = "2"
+element = "SkipSelf: times = 2"
 
 [[area]]
 description = "1時間に1本のバスに間に合った。"
 [[area.effect]]
-name = "PushSelf"
-settings = "2"
+element = "PushSelf: num = 2"
 
 [[area]]
 description = "天気が良くて気持ちが良い。"
-[[area.effect]]
-name = "NoEffect"
-settings = ""
 
 [[area]]
 description = "川が綺麗だ。"
 [[area.effect]]
-name = "NoEffect"
-settings = ""
+element = "NoEffect: "
 
 [[area]]
 description = "不審者発見。"
 [[area.effect]]
-name = "PullSelf"
-settings = "1"
+element = "PullSelf: num = 1"
 
 [[area]]
 description = "あともうすこしで学校だ。"
 [[area.effect]]
-name = "NoEffect"
-settings = "1"
+element = "NoEffect: "
 
 [[area]]
 description = "忘れ物を家に取りに行く。"
 [[area.effect]]
-name = "PullSelf"
-settings = "2"
+element = "PullSelf: num = 2"
