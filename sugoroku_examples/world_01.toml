@@ -14,7 +14,7 @@ settings = "2"
 [[area]]
 description = "1時間に1本のバスに間に合った。"
 [[area.effect]]
-name = "AdvanceSelf"
+name = "PushSelf"
 settings = "2"
 
 [[area]]
@@ -32,7 +32,7 @@ settings = ""
 [[area]]
 description = "不審者発見。"
 [[area.effect]]
-name = "DisadvanceSelf"
+name = "PullSelf"
 settings = "1"
 
 [[area]]
@@ -44,5 +44,5 @@ settings = "1"
 [[area]]
 description = "忘れ物を家に取りに行く。"
 [[area.effect]]
-name = "DisadvanceSelf"
+name = "PullSelf"
 settings = "2"

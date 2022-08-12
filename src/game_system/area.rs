@@ -73,17 +73,17 @@ pub fn try_make_area_effect(
                 })?;
             Ok(Box::new(SkipSelf::new(num_skip)))
         }
-        "AdvanceSelf" => {
+        "PushSelf" => {
             let num_advance = settings.replace(char::is_whitespace,"")
                 .parse()
-                .with_context(|| "failed to parse settings of AdvanceSelf from String.\nFormat: <num_advance: usize>")?;
-            Ok(Box::new(AdvanceSelf::new(num_advance)))
+                .with_context(|| "failed to parse settings of PushSelf from String.\nFormat: <num_advance: usize>")?;
+            Ok(Box::new(PushSelf::new(num_advance)))
         }
-        "DisadvanceSelf" => {
+        "PullSelf" => {
             let num_disadvance = settings.replace(char::is_whitespace,"")
                 .parse()
-                .with_context(|| "failed to parse settings of DisadvanceSelf from String.\nFormat: <num_disadvance: usize>")?;
-            Ok(Box::new(DisadvanceSelf::new(num_disadvance)))
+                .with_context(|| "failed to parse settings of PullSelf from String.\nFormat: <num_disadvance: usize>")?;
+            Ok(Box::new(PullSelf::new(num_disadvance)))
         }
         _ => Err(GameSystemError::NotFoundAreaType(area_type.to_owned()).into()),
     }
@@ -149,15 +149,15 @@ impl AreaEffect for SkipSelf {
 ///
 /// ステージ作成時にはsetteingsに進む数を記入する。
 #[derive(Clone, Debug)]
-pub struct AdvanceSelf {
+pub struct PushSelf {
     num_advance: usize,
 }
-impl AdvanceSelf {
+impl PushSelf {
     pub fn new(num_advance: usize) -> Self {
         Self { num_advance }
     }
 }
-impl AreaEffect for AdvanceSelf {
+impl AreaEffect for PushSelf {
     fn effect_text(&self, preferences: &Preferences) -> String {
         match preferences.language() {
             Language::Japanese => format!("プレイヤーは{} マス進む。", self.num_advance),
@@ -181,15 +181,15 @@ impl AreaEffect for AdvanceSelf {
 ///
 /// ステージ作成時にはsetteingsに戻す数を記入する。
 #[derive(Clone, Debug)]
-pub struct DisadvanceSelf {
+pub struct PullSelf {
     num_disadvance: usize,
 }
-impl DisadvanceSelf {
+impl PullSelf {
     pub fn new(num_disadvance: usize) -> Self {
         Self { num_disadvance }
     }
 }
-impl AreaEffect for DisadvanceSelf {
+impl AreaEffect for PullSelf {
     fn effect_text(&self, preferences: &Preferences) -> String {
         match preferences.language() {
             Language::Japanese => format!("プレイヤーは{} マス戻る。", self.num_disadvance),
