@@ -1,0 +1,192 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_OUTPUT_EXCMD	mixed	/number, pattern, mixed, or combineV2/
+!_TAG_OUTPUT_FILESEP	slash	/slash or backslash/
+!_TAG_OUTPUT_MODE	u-ctags	/u-ctags or e-ctags/
+!_TAG_PATTERN_LENGTH_LIMIT	96	/0 for no limit/
+!_TAG_PROC_CWD	/Users/ishida/myfiles/products/sugoroku/src/	//
+!_TAG_PROGRAM_AUTHOR	Universal Ctags Team	//
+!_TAG_PROGRAM_NAME	Universal Ctags	/Derived from Exuberant Ctags/
+!_TAG_PROGRAM_URL	https://ctags.io/	/official site/
+!_TAG_PROGRAM_VERSION	5.9.0	/1f2c0e0/
+Action	activate.rs	/^enum Action {$/;"	g
+AppArg	bin/make_completion_script.rs	/^struct AppArg {$/;"	s
+Area	game_system/area.rs	/^impl Area {$/;"	c
+Area	game_system/area.rs	/^pub struct Area {$/;"	s
+AreaDescription	game_system/toml_interface.rs	/^struct AreaDescription {$/;"	s
+AreaEffect	game_system/area.rs	/^pub trait AreaEffect: core::fmt::Debug {$/;"	i
+AreaEffectDescription	game_system/toml_interface.rs	/^struct AreaEffectDescription {$/;"	s
+Cli	activate.rs	/^impl Cli {$/;"	c
+Cli	activate.rs	/^pub struct Cli {$/;"	s
+DiceResult	user_interface/tui/status.rs	/^    DiceResult,$/;"	e	enum:UiStatus
+DiceRoll	user_interface/tui/status.rs	/^    DiceRoll,$/;"	e	enum:UiStatus
+DuplicatePlayer	error.rs	/^    DuplicatePlayer(String),$/;"	e	enum:GameSystemError
+Game	activate.rs	/^    Game {$/;"	e	enum:Action
+GameData	user_interface/tui/status.rs	/^impl GameData {$/;"	c
+GameData	user_interface/tui/status.rs	/^pub struct GameData {$/;"	s
+GameFinished	user_interface/tui/status.rs	/^    GameFinished,$/;"	e	enum:UiStatus
+GameSystemError	error.rs	/^pub enum GameSystemError {$/;"	g
+Japanese	preferences.rs	/^    Japanese,$/;"	e	enum:Language
+Language	preferences.rs	/^impl Default for Language {$/;"	c
+Language	preferences.rs	/^pub enum Language {$/;"	g
+NoEffect	game_system/area.rs	/^impl AreaEffect for NoEffect {$/;"	c
+NoEffect	game_system/area.rs	/^impl NoEffect {$/;"	c
+NoEffect	game_system/area.rs	/^pub struct NoEffect {}$/;"	s
+NoPlayer	error.rs	/^    NoPlayer,$/;"	e	enum:GameSystemError
+NotFoundAreaType	error.rs	/^    NotFoundAreaType(String),$/;"	e	enum:GameSystemError
+NotFoundPlayer	error.rs	/^    NotFoundPlayer(String),$/;"	e	enum:GameSystemError
+OutOfRangeDice	error.rs	/^    OutOfRangeDice(usize),$/;"	e	enum:GameSystemError
+OutOfRangePosition	error.rs	/^    OutOfRangePosition(String, usize),$/;"	e	enum:GameSystemError
+PlayerListDescription	game_system/toml_interface.rs	/^struct PlayerListDescription {$/;"	s
+PlayerOrder	game_system/player_status.rs	/^pub trait PlayerOrder {$/;"	i
+PlayerStatus	game_system/player_status.rs	/^impl Default for PlayerStatus {$/;"	c
+PlayerStatus	game_system/player_status.rs	/^impl PlayerStatus {$/;"	c
+PlayerStatus	game_system/player_status.rs	/^pub struct PlayerStatus {$/;"	s
+Preferences	preferences.rs	/^impl Preferences {$/;"	c
+Preferences	preferences.rs	/^pub struct Preferences {$/;"	s
+PullSelf	game_system/area.rs	/^impl AreaEffect for PullSelf {$/;"	c
+PullSelf	game_system/area.rs	/^impl PullSelf {$/;"	c
+PullSelf	game_system/area.rs	/^pub struct PullSelf {$/;"	s
+PushSelf	game_system/area.rs	/^impl AreaEffect for PushSelf {$/;"	c
+PushSelf	game_system/area.rs	/^impl PushSelf {$/;"	c
+PushSelf	game_system/area.rs	/^pub struct PushSelf {$/;"	s
+QuitMenu	user_interface/tui/status.rs	/^    QuitMenu,$/;"	e	enum:UiStatus
+Skip	user_interface/tui/status.rs	/^    Skip,$/;"	e	enum:UiStatus
+SkipSelf	game_system/area.rs	/^impl AreaEffect for SkipSelf {$/;"	c
+SkipSelf	game_system/area.rs	/^impl SkipSelf {$/;"	c
+SkipSelf	game_system/area.rs	/^pub struct SkipSelf {$/;"	s
+StatusDescription	game_system/toml_interface.rs	/^struct StatusDescription {$/;"	s
+String	game_system/player_status.rs	/^impl PlayerOrder for [String] {$/;"	c
+TextSet	user_interface/tui/status.rs	/^impl TextSet {$/;"	c
+TextSet	user_interface/tui/status.rs	/^pub struct TextSet {$/;"	s
+TitleMenu	user_interface/tui/status.rs	/^    TitleMenu,$/;"	e	enum:UiStatus
+UiStatus	user_interface/tui/status.rs	/^pub enum UiStatus {$/;"	g
+World	game_system/world.rs	/^impl World {$/;"	c
+World	game_system/world.rs	/^pub struct World {$/;"	s
+WorldDescription	game_system/toml_interface.rs	/^struct WorldDescription {$/;"	s
+WorldSettingDescription	game_system/toml_interface.rs	/^struct WorldSettingDescription {$/;"	s
+WorldToTex	activate.rs	/^    WorldToTex {$/;"	e	enum:Action
+action	activate.rs	/^    action: Action,$/;"	m	struct:Cli
+activate	lib.rs	/^pub mod activate;$/;"	n
+add_num_skip	game_system/player_status.rs	/^    pub fn add_num_skip(&mut self, x: u8) {$/;"	P	implementation:PlayerStatus
+area	game_system.rs	/^mod area;$/;"	n
+area	game_system/toml_interface.rs	/^    area: Vec<AreaDescription>,$/;"	m	struct:WorldDescription
+area_description	game_system/area.rs	/^    pub fn area_description(&self, preferences: &Preferences) -> String {$/;"	P	implementation:Area
+area_list	game_system/world.rs	/^    area_list: Vec<Area>,$/;"	m	struct:World
+area_list	game_system/world.rs	/^    pub fn area_list(&self) -> &Vec<Area> {$/;"	P	implementation:World
+change_player	user_interface/tui/status.rs	/^    fn change_player(&mut self) -> Result<()> {$/;"	P	implementation:GameData
+check_goal_player	game_system/world.rs	/^    fn check_goal_player(&mut self, player_status_table: &mut HashMap<String, PlayerStatus>) {$/;"	P	implementation:World
+current_player	user_interface/tui/status.rs	/^    pub current_player: String,$/;"	m	struct:GameData
+default	game_system/player_status.rs	/^    fn default() -> Self {$/;"	P	implementation:PlayerStatus
+default	preferences.rs	/^    fn default() -> Self {$/;"	P	implementation:Language
+description	game_system/area.rs	/^    description: String,$/;"	m	struct:Area
+description	game_system/toml_interface.rs	/^    description: String,$/;"	m	struct:AreaDescription
+dice_max	game_system/toml_interface.rs	/^    dice_max: usize,$/;"	m	struct:WorldSettingDescription
+dice_max	game_system/world.rs	/^    dice_max: usize,$/;"	m	struct:World
+dice_max	game_system/world.rs	/^    pub fn dice_max(&self) -> usize {$/;"	P	implementation:World
+dice_result	user_interface/tui/status.rs	/^    fn dice_result(&mut self, preferences: &Preferences, key: Key) -> Result<()> {$/;"	P	implementation:GameData
+dice_roll	game_system/world.rs	/^    pub fn dice_roll($/;"	P	implementation:World
+dice_roll	user_interface/tui/status.rs	/^    fn dice_roll(&mut self, preferences: &Preferences, key: Key) -> Result<()> {$/;"	P	implementation:GameData
+dice_string	user_interface/tui/status.rs	/^    pub dice_string: String,$/;"	m	struct:TextSet
+effect	game_system/toml_interface.rs	/^    effect: Vec<AreaEffectDescription>,$/;"	m	struct:AreaDescription
+effect_list	game_system/area.rs	/^    effect_list: Vec<Box<dyn AreaEffect>>,$/;"	m	struct:Area
+effect_text	game_system/area.rs	/^    fn effect_text(&self, preferences: &Preferences) -> String {$/;"	P	implementation:NoEffect
+effect_text	game_system/area.rs	/^    fn effect_text(&self, preferences: &Preferences) -> String {$/;"	P	implementation:PullSelf
+effect_text	game_system/area.rs	/^    fn effect_text(&self, preferences: &Preferences) -> String {$/;"	P	implementation:PushSelf
+effect_text	game_system/area.rs	/^    fn effect_text(&self, preferences: &Preferences) -> String {$/;"	P	implementation:SkipSelf
+effect_text	game_system/area.rs	/^    fn effect_text(&self, preferences: &Preferences) -> String;$/;"	P	interface:AreaEffect
+error	lib.rs	/^mod error;$/;"	n
+execute	game_system/area.rs	/^    fn execute($/;"	P	implementation:NoEffect
+execute	game_system/area.rs	/^    fn execute($/;"	P	implementation:PullSelf
+execute	game_system/area.rs	/^    fn execute($/;"	P	implementation:PushSelf
+execute	game_system/area.rs	/^    fn execute($/;"	P	implementation:SkipSelf
+execute	game_system/area.rs	/^    fn execute($/;"	P	interface:AreaEffect
+execute	game_system/area.rs	/^    pub fn execute($/;"	P	implementation:Area
+game_finished	user_interface/tui/status.rs	/^    fn game_finished(&mut self, preferences: &Preferences, key: Key) -> Result<()> {$/;"	P	implementation:GameData
+game_system	lib.rs	/^mod game_system;$/;"	n
+general	game_system/toml_interface.rs	/^    general: WorldSettingDescription,$/;"	m	struct:WorldDescription
+go_backward	game_system/player_status.rs	/^    pub fn go_backward(&mut self, n: usize) {$/;"	P	implementation:PlayerStatus
+go_forward	game_system/player_status.rs	/^    pub fn go_forward(&mut self, n: usize) {$/;"	P	implementation:PlayerStatus
+goal_description	game_system/toml_interface.rs	/^    goal_description: String,$/;"	m	struct:WorldSettingDescription
+guidance	user_interface/tui/status.rs	/^    pub guidance: String,$/;"	m	struct:TextSet
+init	user_interface/tui/status.rs	/^    pub fn init(&mut self, preferences: &Preferences) -> Result<()> {$/;"	P	implementation:GameData
+language	preferences.rs	/^    language: Language,$/;"	m	struct:Preferences
+language	preferences.rs	/^    pub fn language(&self) -> Language {$/;"	P	implementation:Preferences
+main	bin/make_completion_script.rs	/^fn main() -> Result<()> {$/;"	f
+main	main.rs	/^fn main() -> Result<()> {$/;"	f
+main_window	user_interface/tui/status.rs	/^    pub main_window: String,$/;"	m	struct:TextSet
+message	user_interface/tui/status.rs	/^    pub message: String,$/;"	m	struct:TextSet
+name	game_system/toml_interface.rs	/^    name: String,$/;"	m	struct:AreaEffectDescription
+name	game_system/toml_interface.rs	/^    name: String,$/;"	m	struct:StatusDescription
+new	game_system/area.rs	/^    fn new() -> Self {$/;"	P	implementation:NoEffect
+new	game_system/area.rs	/^    fn new(num_skip: u8) -> Self {$/;"	P	implementation:SkipSelf
+new	game_system/area.rs	/^    pub fn new(description: String, effect_list: Vec<Box<dyn AreaEffect>>) -> Self {$/;"	P	implementation:Area
+new	game_system/area.rs	/^    pub fn new(num_advance: usize) -> Self {$/;"	P	implementation:PushSelf
+new	game_system/area.rs	/^    pub fn new(num_disadvance: usize) -> Self {$/;"	P	implementation:PullSelf
+new	game_system/world.rs	/^    pub fn new(title: String, opening_msg: String, dice_max: usize, area_list: Vec<Area>) -> Sel/;"	P	implementation:World
+next_player	game_system/player_status.rs	/^    fn next_player($/;"	P	implementation:String
+next_player	game_system/player_status.rs	/^    fn next_player($/;"	P	interface:PlayerOrder
+num_advance	game_system/area.rs	/^    num_advance: usize,$/;"	m	struct:PushSelf
+num_disadvance	game_system/area.rs	/^    num_disadvance: usize,$/;"	m	struct:PullSelf
+num_goal_player	game_system/world.rs	/^    num_goal_player: u8,$/;"	m	struct:World
+num_skip	game_system/area.rs	/^    num_skip: u8,$/;"	m	struct:SkipSelf
+num_skip	game_system/player_status.rs	/^    num_skip: u8,$/;"	m	struct:PlayerStatus
+num_skip	game_system/player_status.rs	/^    pub fn num_skip(&self) -> u8 {$/;"	P	implementation:PlayerStatus
+opening_msg	game_system/toml_interface.rs	/^    opening_msg: String,$/;"	m	struct:WorldSettingDescription
+opening_msg	game_system/world.rs	/^    opening_msg: String,$/;"	m	struct:World
+opening_msg	game_system/world.rs	/^    pub fn opening_msg(&self) -> &str {$/;"	P	implementation:World
+order_of_arrival	game_system/player_status.rs	/^    order_of_arrival: Option<u8>,$/;"	m	struct:PlayerStatus
+order_of_arrival	game_system/player_status.rs	/^    pub fn order_of_arrival(&self) -> Option<u8> {$/;"	P	implementation:PlayerStatus
+player	game_system/toml_interface.rs	/^    player: Vec<StatusDescription>,$/;"	m	struct:PlayerListDescription
+player_list	user_interface/tui/status.rs	/^    pub player_list: String,$/;"	m	struct:TextSet
+player_order	user_interface/tui/status.rs	/^    pub player_order: Vec<String>,$/;"	m	struct:GameData
+player_status	game_system.rs	/^pub mod player_status;$/;"	n
+player_status_table	user_interface/tui/status.rs	/^    pub player_status_table: HashMap<String, PlayerStatus>,$/;"	m	struct:GameData
+position	game_system/player_status.rs	/^    position: usize,$/;"	m	struct:PlayerStatus
+position	game_system/player_status.rs	/^    pub fn position(&self) -> usize {$/;"	P	implementation:PlayerStatus
+preferences	lib.rs	/^mod preferences;$/;"	n
+quit_menu	user_interface/tui/status.rs	/^    fn quit_menu(&mut self, _preferences: &Preferences, key: Key) -> Result<bool> {$/;"	P	implementation:GameData
+read_player_list_from_file	game_system/toml_interface.rs	/^pub fn read_player_list_from_file($/;"	f
+read_world_from_file	game_system/toml_interface.rs	/^pub fn read_world_from_file(file_path: &Path) -> Result<World> {$/;"	f
+run	activate.rs	/^    pub fn run() -> Result<()> {$/;"	P	implementation:Cli
+run	user_interface/tui.rs	/^pub fn run($/;"	f
+run	world_to_tex.rs	/^pub fn run(world_file_path: PathBuf) -> Result<()> {$/;"	f
+screen	user_interface/tui.rs	/^mod screen;$/;"	n
+set_dice_is_out_of_range	user_interface/tui/status.rs	/^    fn set_dice_is_out_of_range(&mut self, preferences: &Preferences, dice: usize) {$/;"	P	implementation:TextSet
+set_guidance	user_interface/tui/status.rs	/^    fn set_guidance(&mut self, preferences: &Preferences) {$/;"	P	implementation:TextSet
+set_order_of_arrival	game_system/player_status.rs	/^    pub fn set_order_of_arrival(&mut self, order_of_arrival: u8) {$/;"	P	implementation:PlayerStatus
+set_player_list	user_interface/tui/status.rs	/^    fn set_player_list($/;"	P	implementation:TextSet
+set_position	game_system/player_status.rs	/^    pub fn set_position(&mut self, position: usize) {$/;"	P	implementation:PlayerStatus
+set_prompt_dice_roll	user_interface/tui/status.rs	/^    fn set_prompt_dice_roll(&mut self, preferences: &Preferences, dice_max: usize) {$/;"	P	implementation:TextSet
+set_prompt_enter	user_interface/tui/status.rs	/^    fn set_prompt_enter(&mut self, preferences: &Preferences) {$/;"	P	implementation:TextSet
+set_prompt_game_finish	user_interface/tui/status.rs	/^    fn set_prompt_game_finish(&mut self, preferences: &Preferences) {$/;"	P	implementation:TextSet
+set_skip_player	user_interface/tui/status.rs	/^    fn set_skip_player(&mut self, preferences: &Preferences, num_skip: u8) {$/;"	P	implementation:TextSet
+settings	game_system/toml_interface.rs	/^    settings: String,$/;"	m	struct:AreaEffectDescription
+shell	bin/make_completion_script.rs	/^    shell: Shell,$/;"	m	struct:AppArg
+skip	user_interface/tui/status.rs	/^    fn skip(&mut self, preferences: &Preferences, key: Key) -> Result<()> {$/;"	P	implementation:GameData
+start_description	game_system/toml_interface.rs	/^    start_description: String,$/;"	m	struct:WorldSettingDescription
+start_description	game_system/world.rs	/^    pub fn start_description(&self, preferences: &Preferences) -> String {$/;"	P	implementation:World
+status	user_interface/tui.rs	/^mod status;$/;"	n
+str	user_interface/tui/status.rs	/^        const DICE_MARK: &'static str = "🎲 ";$/;"	v	method:TextSet::set_player_list
+str	user_interface/tui/status.rs	/^        const GOAL_MARK: &'static str = "🏁 ";$/;"	v	method:TextSet::set_player_list
+sub_num_skip	game_system/player_status.rs	/^    pub fn sub_num_skip(&mut self, x: u8) {$/;"	P	implementation:PlayerStatus
+text_set	user_interface/tui/status.rs	/^    pub text_set: TextSet,$/;"	m	struct:GameData
+title	game_system/toml_interface.rs	/^    title: String,$/;"	m	struct:WorldSettingDescription
+title	game_system/world.rs	/^    pub fn title(&self) -> &str {$/;"	P	implementation:World
+title	game_system/world.rs	/^    title: String,$/;"	m	struct:World
+title_menu	user_interface/tui/status.rs	/^    fn title_menu(&mut self, _preferences: &Preferences, key: Key) -> Result<()> {$/;"	P	implementation:GameData
+toml_interface	game_system.rs	/^pub mod toml_interface;$/;"	n
+transition	user_interface/tui/status.rs	/^    pub fn transition(&mut self, preferences: &Preferences, key: Key) -> Result<bool> {$/;"	P	implementation:GameData
+try_make_area_effect	game_system/area.rs	/^pub fn try_make_area_effect($/;"	f
+try_new	user_interface/tui/status.rs	/^    pub fn try_new($/;"	P	implementation:GameData
+tui	user_interface.rs	/^pub mod tui;$/;"	n
+ui	user_interface/tui/screen.rs	/^pub fn ui<B: Backend>(frame: &mut Frame<B>, preferences: &Preferences, game_data: &GameData) {$/;"	f
+ui_playing	user_interface/tui/screen.rs	/^fn ui_playing<B: Backend>(frame: &mut Frame<B>, _preferences: &Preferences, game_data: &GameData/;"	f
+ui_quit	user_interface/tui/screen.rs	/^fn ui_quit<B: Backend>(frame: &mut Frame<B>, preferences: &Preferences) {$/;"	f
+ui_status	user_interface/tui/status.rs	/^    pub ui_status: UiStatus,$/;"	m	struct:GameData
+ui_status_buffer	user_interface/tui/status.rs	/^    pub ui_status_buffer: UiStatus,$/;"	m	struct:GameData
+ui_title	user_interface/tui/screen.rs	/^fn ui_title<B: Backend>(frame: &mut Frame<B>, preferences: &Preferences, game_data: &GameData) {$/;"	f
+user_interface	lib.rs	/^mod user_interface;$/;"	n
+world	game_system.rs	/^pub mod world;$/;"	n
+world	user_interface/tui/status.rs	/^    pub world: World,$/;"	m	struct:GameData
+world_to_tex	lib.rs	/^mod world_to_tex;$/;"	n
