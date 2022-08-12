@@ -31,32 +31,32 @@
 |||
 |-|-|
 |効果|休みを追加する。|
-|形式|SkipSelf: times = <u8>|
+|形式|SkipSelf: times = \<u8>|
 
 ### PushSelf
 
 |||
 |-|-|
 |効果|プレイヤーを進める。|
-|形式|PushSelf: num = <usize>|
+|形式|PushSelf: num = \<usize>|
 
 ### PullSelf
 
 |||
 |-|-|
 |効果|プレイヤーを戻す。|
-|形式|PullSelf: num = <usize>|
+|形式|PullSelf: num = \<usize>|
 
 ### PushOthersAll
 
 |||
 |-|-|
 |効果|自分以外を進める。|
-|形式|PushOthersAll: num = <usize>|
+|形式|PushOthersAll: num = \<usize>|
 
 ### PullOthersAll
 
 |||
 |-|-|
 |効果|自分以外を戻す。|
-|形式|PullOthersAll: num = <usize>|
+|形式|PullOthersAll: num = \<usize>|
