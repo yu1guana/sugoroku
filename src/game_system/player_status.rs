@@ -79,13 +79,7 @@ impl PlayerOrder for [String] {
                 .order_of_arrival()
             {
                 Some(_) => {}
-                None => {
-                    if player_status_table.get(player).unwrap().num_skip() != 0 {
-                        player_status_table.get_mut(player).unwrap().sub_num_skip(1);
-                    } else {
-                        return Ok(Some(player.to_owned()));
-                    };
-                }
+                None => return Ok(Some(player.to_owned())),
             }
         }
         Ok(None)

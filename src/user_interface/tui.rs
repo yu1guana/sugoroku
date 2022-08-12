@@ -34,6 +34,7 @@ enum UiStatus {
     QuitMenu,
     TitleMenu,
     DiceRoll,
+    Skip,
     DiceResult,
     GameFinished,
 }
@@ -147,6 +148,13 @@ impl TextSet {
             }
         }
     }
+    fn set_skip_player(&mut self, preferences: &Preferences, num_skip: u8) {
+        match preferences.language() {
+            Language::Japanese => {
+                self.main_window = format!("プレイヤーはお休みです。カウント: {}", num_skip)
+            }
+        }
+    }
 }
 
 pub fn run(
@@ -178,6 +186,9 @@ pub fn run(
             }
             UiStatus::DiceRoll => {
                 dice_roll(&preferences, &mut terminal, &mut game_data, key)?;
+            }
+            UiStatus::Skip => {
+                skip(&preferences, &mut terminal, &mut game_data, key)?;
             }
             UiStatus::DiceResult => {
                 dice_result(&preferences, &mut terminal, &mut game_data, key)?;
@@ -243,20 +254,7 @@ fn dice_roll<B: Backend>(
                     ) {
                         Ok(main_window_text) => {
                             game_data.text_set.main_window = main_window_text;
-                            match game_data.player_order.next_player(
-                                &game_data.current_player,
-                                &mut game_data.player_status_table,
-                            )? {
-                                Some(player) => {
-                                    game_data.ui_status = UiStatus::DiceResult;
-                                    game_data.ui_status_buffer = UiStatus::DiceResult;
-                                    game_data.current_player = player.to_owned();
-                                }
-                                None => {
-                                    game_data.ui_status = UiStatus::GameFinished;
-                                    game_data.ui_status_buffer = UiStatus::GameFinished;
-                                }
-                            }
+                            change_player(game_data)?;
                         }
                         Err(GameSystemError::OutOfRangeDice(dice)) => {
                             game_data.ui_status = UiStatus::DiceResult;
@@ -290,6 +288,40 @@ fn dice_roll<B: Backend>(
     Ok(())
 }
 
+fn skip<B: Backend>(
+    preferences: &Preferences,
+    terminal: &mut Terminal<B>,
+    game_data: &mut GameData,
+    key: Key,
+) -> Result<()> {
+    match key {
+        Key::Char('\n') => {
+            game_data
+                .player_status_table
+                .get_mut(&game_data.current_player)
+                .ok_or_else(|| {
+                    GameSystemError::NotFoundPlayer(game_data.current_player.to_owned())
+                })?
+                .sub_num_skip(1);
+            game_data.text_set.set_prompt_enter(preferences);
+            game_data.text_set.main_window.clear();
+            change_player(game_data)?;
+        }
+        Key::Esc => {
+            game_data.ui_status_buffer = game_data.ui_status.clone();
+            game_data.ui_status = UiStatus::QuitMenu;
+        }
+        Key::Ctrl('t') => {
+            game_data.ui_status_buffer = game_data.ui_status.clone();
+            game_data.ui_status = UiStatus::TitleMenu;
+        }
+        Key::Ctrl('l') => terminal.clear()?,
+        _ => return Ok(()),
+    }
+    terminal.draw(|frame| ui(frame, preferences, &game_data))?;
+    Ok(())
+}
+
 fn dice_result<B: Backend>(
     preferences: &Preferences,
     terminal: &mut Terminal<B>,
@@ -298,11 +330,27 @@ fn dice_result<B: Backend>(
 ) -> Result<()> {
     match key {
         Key::Char('\n') => {
-            game_data.ui_status = UiStatus::DiceRoll;
-            game_data.ui_status_buffer = UiStatus::DiceRoll;
-            game_data.text_set.dice_string.clear();
-            game_data.text_set.main_window.clear();
-            game_data.text_set.set_prompt_dice_roll(preferences);
+            let num_skip_of_current_player = game_data
+                .player_status_table
+                .get(&game_data.current_player)
+                .ok_or_else(|| {
+                    GameSystemError::NotFoundPlayer(game_data.current_player.to_owned())
+                })?
+                .num_skip();
+            if num_skip_of_current_player == 0 {
+                game_data.ui_status = UiStatus::DiceRoll;
+                game_data.ui_status_buffer = UiStatus::DiceRoll;
+                game_data.text_set.dice_string.clear();
+                game_data.text_set.main_window.clear();
+                game_data.text_set.set_prompt_dice_roll(preferences);
+            } else {
+                game_data.ui_status = UiStatus::Skip;
+                game_data.ui_status_buffer = UiStatus::Skip;
+                game_data.text_set.set_prompt_enter(preferences);
+                game_data
+                    .text_set
+                    .set_skip_player(preferences, num_skip_of_current_player);
+            };
             game_data.text_set.set_player_list(
                 preferences,
                 &game_data.current_player,
@@ -368,6 +416,24 @@ fn quit_menu<B: Backend>(
             Ok(false)
         }
     }
+}
+
+fn change_player(game_data: &mut GameData) -> Result<()> {
+    match game_data.player_order.next_player(
+        &game_data.current_player,
+        &mut game_data.player_status_table,
+    )? {
+        Some(player) => {
+            game_data.ui_status = UiStatus::DiceResult;
+            game_data.ui_status_buffer = UiStatus::DiceResult;
+            game_data.current_player = player.to_owned();
+        }
+        None => {
+            game_data.ui_status = UiStatus::GameFinished;
+            game_data.ui_status_buffer = UiStatus::GameFinished;
+        }
+    }
+    Ok(())
 }
 
 fn ui<B: Backend>(frame: &mut Frame<B>, preferences: &Preferences, game_data: &GameData) {

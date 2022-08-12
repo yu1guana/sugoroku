@@ -9,7 +9,7 @@ dice_max = 4
 description = "靴紐が切れた。"
 [[area.effect]]
 name = "SkipSelf"
-settings = "1"
+settings = "2"
 
 [[area]]
 description = "1時間に1本のバスに間に合った。"
