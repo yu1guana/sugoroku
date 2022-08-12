@@ -4,6 +4,7 @@ use crate::error::GameSystemError;
 use crate::game_system::area::Area;
 use crate::game_system::player_status::PlayerStatus;
 use crate::preferences::Preferences;
+use rand::rngs::ThreadRng;
 use std::collections::HashMap;
 
 #[derive(Debug)]
@@ -13,6 +14,7 @@ pub struct World {
     dice_max: usize,
     area_list: Vec<Area>,
     num_goal_player: u8,
+    rng: ThreadRng,
 }
 
 impl World {
@@ -23,6 +25,7 @@ impl World {
             dice_max,
             area_list,
             num_goal_player: 0,
+            rng: rand::thread_rng(),
         }
     }
     pub fn title(&self) -> &str {
@@ -71,7 +74,12 @@ impl World {
                     current_player_position,
                 )
             })?
-            .execute(current_player, player_order, player_status_table)?;
+            .execute(
+                current_player,
+                player_order,
+                player_status_table,
+                &mut self.rng,
+            )?;
         self.check_goal_player(player_status_table);
         Ok(self
             .area_list

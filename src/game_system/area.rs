@@ -4,6 +4,7 @@ use crate::error::GameSystemError;
 use crate::game_system::player_status::PlayerStatus;
 use crate::preferences::{Language, Preferences};
 use anyhow::{anyhow, Context};
+use rand::rngs::ThreadRng;
 use std::collections::HashMap;
 use std::str::FromStr;
 
@@ -26,9 +27,10 @@ impl Area {
         current_player: &str,
         player_order: &[String],
         player_status_table: &mut HashMap<String, PlayerStatus>,
+        rng: &mut ThreadRng,
     ) -> Result<(), GameSystemError> {
         for effect in self.effect_list.iter() {
-            effect.execute(current_player, player_order, player_status_table)?;
+            effect.execute(current_player, player_order, player_status_table, rng, "")?;
         }
         Ok(())
     }
@@ -49,12 +51,16 @@ impl Area {
 
 /// マスの持つ効果
 pub trait AreaEffect: core::fmt::Debug {
+    /// 効果発動の際にユーザ入力が必要かどうか
+    fn need_argument(&self) -> bool;
     fn effect_text(&self, preferences: &Preferences) -> String;
     fn execute(
         &self,
         current_player: &str,
         player_order: &[String],
         player_status_table: &mut HashMap<String, PlayerStatus>,
+        rng: &mut ThreadRng,
+        arguments: &str,
     ) -> Result<(), GameSystemError>;
 }
 
@@ -146,6 +152,9 @@ impl NoEffect {
     }
 }
 impl AreaEffect for NoEffect {
+    fn need_argument(&self) -> bool {
+        false
+    }
     fn effect_text(&self, preferences: &Preferences) -> String {
         match preferences.language() {
             Language::Japanese => format!("なし"),
@@ -156,6 +165,8 @@ impl AreaEffect for NoEffect {
         _current_player: &str,
         _player_order: &[String],
         _player_status_list: &mut HashMap<String, PlayerStatus>,
+        _rng: &mut ThreadRng,
+        _arguments: &str,
     ) -> Result<(), GameSystemError> {
         Ok(())
     }
@@ -183,6 +194,9 @@ impl FromStr for GoToStart {
     }
 }
 impl AreaEffect for GoToStart {
+    fn need_argument(&self) -> bool {
+        false
+    }
     fn effect_text(&self, preferences: &Preferences) -> String {
         match preferences.language() {
             Language::Japanese => format!("振り出しに戻る。"),
@@ -193,6 +207,8 @@ impl AreaEffect for GoToStart {
         current_player: &str,
         _player_order: &[String],
         player_status_table: &mut HashMap<String, PlayerStatus>,
+        _rng: &mut ThreadRng,
+        _arguments: &str,
     ) -> Result<(), GameSystemError> {
         player_status_table
             .get_mut(current_player)
@@ -238,6 +254,9 @@ impl FromStr for SkipSelf {
     }
 }
 impl AreaEffect for SkipSelf {
+    fn need_argument(&self) -> bool {
+        false
+    }
     fn effect_text(&self, preferences: &Preferences) -> String {
         match preferences.language() {
             Language::Japanese => format!("プレイヤーの休みを{}回追加。", self.num_skip),
@@ -248,6 +267,8 @@ impl AreaEffect for SkipSelf {
         current_player: &str,
         _player_order: &[String],
         player_status_table: &mut HashMap<String, PlayerStatus>,
+        _rng: &mut ThreadRng,
+        _arguments: &str,
     ) -> Result<(), GameSystemError> {
         player_status_table
             .get_mut(current_player)
@@ -293,6 +314,9 @@ impl FromStr for PushSelf {
     }
 }
 impl AreaEffect for PushSelf {
+    fn need_argument(&self) -> bool {
+        false
+    }
     fn effect_text(&self, preferences: &Preferences) -> String {
         match preferences.language() {
             Language::Japanese => format!("プレイヤーは{} マス進む。", self.num_step),
@@ -303,6 +327,8 @@ impl AreaEffect for PushSelf {
         current_player: &str,
         _player_order: &[String],
         player_status_table: &mut HashMap<String, PlayerStatus>,
+        _rng: &mut ThreadRng,
+        _arguments: &str,
     ) -> Result<(), GameSystemError> {
         player_status_table
             .get_mut(current_player)
@@ -348,6 +374,9 @@ impl FromStr for PushOthersAll {
     }
 }
 impl AreaEffect for PushOthersAll {
+    fn need_argument(&self) -> bool {
+        false
+    }
     fn effect_text(&self, preferences: &Preferences) -> String {
         match preferences.language() {
             Language::Japanese => format!("自分以外のプレイヤーは{} マス進む。", self.num_step),
@@ -358,6 +387,8 @@ impl AreaEffect for PushOthersAll {
         current_player: &str,
         player_order: &[String],
         player_status_table: &mut HashMap<String, PlayerStatus>,
+        _rng: &mut ThreadRng,
+        _arguments: &str,
     ) -> Result<(), GameSystemError> {
         for player in player_order {
             if player != current_player {
@@ -407,6 +438,9 @@ impl FromStr for PullSelf {
     }
 }
 impl AreaEffect for PullSelf {
+    fn need_argument(&self) -> bool {
+        false
+    }
     fn effect_text(&self, preferences: &Preferences) -> String {
         match preferences.language() {
             Language::Japanese => format!("プレイヤーは{} マス戻る。", self.num_step),
@@ -417,6 +451,8 @@ impl AreaEffect for PullSelf {
         current_player: &str,
         _player_order: &[String],
         player_status_table: &mut HashMap<String, PlayerStatus>,
+        _rng: &mut ThreadRng,
+        _arguments: &str,
     ) -> Result<(), GameSystemError> {
         player_status_table
             .get_mut(current_player)
@@ -462,6 +498,9 @@ impl FromStr for PullOthersAll {
     }
 }
 impl AreaEffect for PullOthersAll {
+    fn need_argument(&self) -> bool {
+        false
+    }
     fn effect_text(&self, preferences: &Preferences) -> String {
         match preferences.language() {
             Language::Japanese => format!("自分以外のプレイヤーは{} マス戻す。", self.num_step),
@@ -472,6 +511,8 @@ impl AreaEffect for PullOthersAll {
         current_player: &str,
         player_order: &[String],
         player_status_table: &mut HashMap<String, PlayerStatus>,
+        _rng: &mut ThreadRng,
+        _arguments: &str,
     ) -> Result<(), GameSystemError> {
         for player in player_order {
             if player != current_player {
