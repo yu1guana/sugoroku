@@ -5,22 +5,22 @@ use anyhow::Result;
 use std::collections::HashMap;
 
 /// プレイヤーの状態
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct PlayerStatus {
     position: usize,
     num_skip: u8,
     order_of_arrival: Option<u8>,
 }
 
-impl Default for PlayerStatus {
-    fn default() -> Self {
-        Self {
-            position: 0,
-            num_skip: 0,
-            order_of_arrival: None,
-        }
-    }
-}
+// impl Default for PlayerStatus {
+//     fn default() -> Self {
+//         Self {
+//             position: 0,
+//             num_skip: 0,
+//             order_of_arrival: None,
+//         }
+//     }
+// }
 
 impl PlayerStatus {
     pub fn position(&self) -> usize {

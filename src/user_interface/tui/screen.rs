@@ -9,7 +9,7 @@ use tui::widgets::{Block, Borders, Paragraph};
 
 pub fn ui<B: Backend>(frame: &mut Frame<B>, preferences: &Preferences, game_data: &GameData) {
     match game_data.ui_status {
-        UiStatus::TitleMenu => ui_title(frame, preferences, &game_data),
+        UiStatus::TitleMenu => ui_title(frame, preferences, game_data),
         UiStatus::QuitMenu => {
             ui_quit(frame, preferences);
         }

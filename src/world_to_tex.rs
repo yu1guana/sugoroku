@@ -42,7 +42,7 @@ pub fn run(world_file_path: PathBuf) -> Result<()> {
     writeln!(buf_writer, "{}", r#"\date{}"#)?;
     writeln!(buf_writer, "{}", r#"\maketitle"#)?;
     writeln!(buf_writer, "{}", r#""#)?;
-    for (i_area, area) in world.area_list().into_iter().enumerate() {
+    for (i_area, area) in world.area_list().iter().enumerate() {
         writeln!(
             buf_writer,
             "{}",

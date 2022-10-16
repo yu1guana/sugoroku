@@ -55,7 +55,7 @@ impl World {
         player_status_table: &mut HashMap<String, PlayerStatus>,
     ) -> Result<String, GameSystemError> {
         if dice < 1 || self.dice_max < dice {
-            return Err(GameSystemError::OutOfRangeDice(dice).into());
+            return Err(GameSystemError::OutOfRangeDice(dice));
         }
         player_status_table
             .get_mut(current_player)
@@ -94,7 +94,7 @@ impl World {
     }
     fn check_goal_player(&mut self, player_status_table: &mut HashMap<String, PlayerStatus>) {
         let mut num_goal_player = 0;
-        for (_, player_status) in player_status_table {
+        for player_status in player_status_table.values_mut() {
             if player_status.order_of_arrival() == None
                 && player_status.position() >= self.area_list.len() - 1
             {

@@ -7,6 +7,7 @@ use crate::game_system::world::World;
 use crate::preferences::{Language, Preferences};
 use anyhow::Result;
 use std::collections::HashMap;
+use std::fmt::Write as _;
 use termion;
 use termion::event::Key;
 
@@ -48,7 +49,7 @@ impl GameData {
     ) -> Result<Self> {
         let current_player = player_order
             .first()
-            .ok_or_else(|| GameSystemError::NoPlayer)?
+            .ok_or(GameSystemError::NoPlayer)?
             .to_owned();
         Ok(Self {
             world,
@@ -61,39 +62,39 @@ impl GameData {
         })
     }
     pub fn init(&mut self, preferences: &Preferences) -> Result<()> {
-        self.text_set.set_guidance(&preferences);
+        self.text_set.set_guidance(preferences);
         self.text_set
-            .set_prompt_dice_roll(&preferences, self.world.dice_max());
+            .set_prompt_dice_roll(preferences, self.world.dice_max());
         self.text_set.set_player_list(
-            &preferences,
+            preferences,
             &self.current_player,
             &self.player_order,
             &self.player_status_table,
         )?;
-        self.text_set.main_window = self.world.start_description(&preferences);
+        self.text_set.main_window = self.world.start_description(preferences);
         Ok(())
     }
     pub fn transition(&mut self, preferences: &Preferences, key: Key) -> Result<bool> {
         let mut flag_loop_break = false;
         match &self.ui_status {
             UiStatus::TitleMenu => {
-                self.title_menu(&preferences, key)?;
+                self.title_menu(preferences, key)?;
             }
             UiStatus::DiceRoll => {
-                self.dice_roll(&preferences, key)?;
+                self.dice_roll(preferences, key)?;
             }
             UiStatus::Skip => {
-                self.skip(&preferences, key)?;
+                self.skip(preferences, key)?;
             }
             UiStatus::DiceResult => {
-                self.dice_result(&preferences, key)?;
+                self.dice_result(preferences, key)?;
             }
             UiStatus::QuitMenu => {
-                if self.quit_menu(&preferences, key)? {
+                if self.quit_menu(preferences, key)? {
                     flag_loop_break = true;
                 }
             }
-            UiStatus::GameFinished => self.game_finished(&preferences, key)?,
+            UiStatus::GameFinished => self.game_finished(preferences, key)?,
         }
         Ok(flag_loop_break)
     }
@@ -264,7 +265,7 @@ impl GameData {
 
     fn quit_menu(&mut self, _preferences: &Preferences, key: Key) -> Result<bool> {
         match key {
-            Key::Char('Y') => return Ok(true),
+            Key::Char('Y') => Ok(true),
             Key::Ctrl('l') => Ok(false),
             _ => {
                 self.ui_status = self.ui_status_buffer.clone();
@@ -281,7 +282,7 @@ impl GameData {
             Some(player) => {
                 self.ui_status = UiStatus::DiceResult;
                 self.ui_status_buffer = UiStatus::DiceResult;
-                self.current_player = player.to_owned();
+                self.current_player = player;
             }
             None => {
                 self.ui_status = UiStatus::GameFinished;
@@ -310,8 +311,8 @@ impl TextSet {
         player_order: &[String],
         player_status_table: &HashMap<String, PlayerStatus>,
     ) -> Result<()> {
-        const GOAL_MARK: &'static str = "🏁 ";
-        const DICE_MARK: &'static str = "🎲 ";
+        const GOAL_MARK: &str = "🏁 ";
+        const DICE_MARK: &str = "🎲 ";
         self.player_list.clear();
         self.player_list.push_str(GOAL_MARK);
         self.player_list.push_str("   ");
@@ -319,15 +320,17 @@ impl TextSet {
         self.player_list.push_str(match preferences.language() {
             Language::Japanese => "名前",
         });
-        self.player_list.push_str("\n");
+        self.player_list.push('\n');
         for player in player_order {
             let order_of_arrival = player_status_table
                 .get(player)
                 .ok_or_else(|| GameSystemError::NotFoundPlayer(player.to_owned()))?
                 .order_of_arrival();
             match order_of_arrival {
-                Some(x) => self.player_list.push_str(&format!("{0:>2} ", x)),
-                None => self.player_list.push_str(&format!("{0:>2} ", "")),
+                // Some(x) => self.player_list.push_str(&format!("{0:>2} ", x)),
+                // None => self.player_list.push_str(&format!("{0:>2} ", "")),
+                Some(x) => write!(self.player_list, "{0:>2} ", x).unwrap(),
+                None => write!(self.player_list, "{0:>2} ", "").unwrap(),
             }
             if player == current_player {
                 self.player_list.push_str(DICE_MARK);
@@ -335,7 +338,7 @@ impl TextSet {
                 self.player_list.push_str("   ");
             }
             self.player_list.push_str(player);
-            self.player_list.push_str("\n");
+            self.player_list.push('\n');
         }
         Ok(())
     }
@@ -343,10 +346,16 @@ impl TextSet {
         self.message.clear();
         match preferences.language() {
             Language::Japanese => {
-                self.message.push_str(&format!(
+                write!(
+                    self.message,
                     "サイコロを振ってください（最大値: {}）>> ",
                     dice_max
-                ));
+                )
+                .unwrap();
+                // self.message.push_str(&format!(
+                //     "サイコロを振ってください（最大値: {}）>> ",
+                //     dice_max
+                // ));
             }
         }
         self.message.push_str(self.dice_string.as_str());

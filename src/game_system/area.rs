@@ -157,7 +157,7 @@ impl AreaEffect for NoEffect {
     }
     fn effect_text(&self, preferences: &Preferences) -> String {
         match preferences.language() {
-            Language::Japanese => format!("なし"),
+            Language::Japanese => "なし".to_string(),
         }
     }
     fn execute(
@@ -199,7 +199,7 @@ impl AreaEffect for GoToStart {
     }
     fn effect_text(&self, preferences: &Preferences) -> String {
         match preferences.language() {
-            Language::Japanese => format!("振り出しに戻る。"),
+            Language::Japanese => "振り出しに戻る。".to_string(),
         }
     }
     fn execute(
