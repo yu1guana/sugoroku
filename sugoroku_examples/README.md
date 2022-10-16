@@ -56,44 +56,11 @@ description = "表示される文章"
 
 ### 現在設定できる効果
 
-#### GoToStart
-
-|||
-|-|-|
-|効果|ふりだしに戻る。|
-|形式|GoToStart:|
-
-#### SkipSelf
-
-|||
-|-|-|
-|効果|休みを追加する。|
-|形式|SkipSelf: times = \<u8>|
-
-#### PushSelf
-
-|||
-|-|-|
-|効果|プレイヤーを進める。|
-|形式|PushSelf: num = \<usize>|
-
-#### PullSelf
-
-|||
-|-|-|
-|効果|プレイヤーを戻す。|
-|形式|PullSelf: num = \<usize>|
-
-#### PushOthersAll
-
-|||
-|-|-|
-|効果|自分以外を進める。|
-|形式|PushOthersAll: num = \<usize>|
-
-#### PullOthersAll
-
-|||
-|-|-|
-|効果|自分以外を戻す。|
-|形式|PullOthersAll: num = \<usize>|
+| 名前       | 効果                           | 入力形式                 |
+| -          | -                              | -                        |
+| GoToStart  | 振り出しに戻る。               | GoToStart:               |
+| SkipSelf   | 休みを追加する。               | SkipSelf: times = \<u8>  |
+| PushSelf   | プレイヤーを進める。           | PushSelf : num = \<u8>   |
+| PullSelf   | プレイヤーを戻す。             | PullSelf: num = \<u8>    |
+| PushOthers | 自分以外のプレイヤーを進める。 | PushOthers : num = \<u8> |
+| PullOthers | 自分以外のプレイヤーを戻す。   | PullOthers: num = \<u8>  |
