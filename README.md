@@ -40,6 +40,7 @@ sugoroku
 書き方と例は[sugoroku\_examples](sugoroku_examples)に置いてあります。
 
 ## License
-Copyright (c) 2023 Yuichi Ishida
-Released under the MIT license
+
+Copyright (c) 2023 Yuichi Ishida  
+Released under the MIT license  
 [https://opensource.org/licenses/mit-license.php](https://opensource.org/licenses/mit-license.php)

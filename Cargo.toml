@@ -18,14 +18,14 @@ panic = 'abort'
 codegen-units = 1
 
 [dependencies]
-anyhow = "1.0.68"
-clap = {version = "4.0.32", features = ["derive"]}
-clap_complete = "4.0.7"
-rand = "0.8.5"
-serde="1.0.152"
-serde_derive = "1.0.152"
+anyhow = "1.0"
+clap = {version = "4.0", features = ["derive"]}
+clap_complete = "4.0"
+rand = "0.8"
+serde="1.0"
+serde_derive = "1.0"
 termion = "1.5"
-thiserror = "1.0.38"
-toml = "0.5.10"
-tui = { version = "0.19.0", default-features = false, features = ['termion'] }
-unicode-width = "0.1.10"
+thiserror = "1.0"
+toml = "0.5"
+tui = { version = "0.19", default-features = false, features = ['termion'] }
+unicode-width = "0.1"
