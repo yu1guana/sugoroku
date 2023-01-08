@@ -3,7 +3,7 @@
 // Released under the MIT license.
 // see https://opensource.org/licenses/mit-license.php
 
-pub mod activate;
+pub mod cli;
 mod error;
 mod game_system;
 mod preferences;

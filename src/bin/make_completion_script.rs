@@ -9,7 +9,7 @@ use clap_complete::{generate, Shell};
 use std::fs::File;
 use std::io::BufWriter;
 use std::path::Path;
-use sugoroku::activate::Cli;
+use sugoroku::cli::Cli;
 
 #[derive(Parser)]
 #[clap(
@@ -19,7 +19,6 @@ use sugoroku::activate::Cli;
     about = "Make shellscript to complete arguments of Sugoroku."
     )]
 struct AppArg {
-    #[clap(arg_enum)]
     shell: Shell,
 }
 
