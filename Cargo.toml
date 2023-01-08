@@ -1,11 +1,21 @@
 [package]
 name = "sugoroku"
+authors = ["Yuichi Ishida <yu1guana@gmail.com>"]
 version = "0.1.0"
+license-file = "LICENSE"
+description = "Sugoroku"
+repository = "https://github.com/yu1guana/sugoroku"
+readme = "README.md"
 edition = "2021"
 publish = false
 default-run = "sugoroku"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[profile.release]
+lto = true
+panic = 'abort'
+codegen-units = 1
 
 [dependencies]
 thiserror = "1.0"

@@ -1,4 +1,7 @@
-// Copyright (c) 2022 Yuichi Ishida
+// Copyright (c) 2023 Yuichi Ishida
+//
+// Released under the MIT license.
+// see https://opensource.org/licenses/mit-license.php
 
 use crate::game_system::toml_interface::read_world_from_file;
 use crate::preferences::Preferences;
